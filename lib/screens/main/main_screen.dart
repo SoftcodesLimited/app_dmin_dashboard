@@ -72,7 +72,7 @@ class MainScreen extends StatelessWidget {
       case 1:
         return MessagesScreen();
       case 2:
-        return const AppDataScreen();
+        return AppDataScreen();
       case 3:
         return const NotificationsScreen();
       default:
