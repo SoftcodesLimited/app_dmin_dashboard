@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/screens/appdata/components/appdata_categories.dart';
 import 'package:myapp/screens/appdata/components/document_tree_widget.dart';
 import 'package:myapp/utils/responsive.dart';
 import 'package:myapp/screens/dashboard/components/header.dart';
@@ -14,7 +13,7 @@ class AppDataScreen extends StatelessWidget {
     return SafeArea(
       child: SingleChildScrollView(
         primary: false,
-        padding: const EdgeInsets.all(defaultPadding),
+        //padding: const EdgeInsets.all(defaultPadding),
         child: Column(
           children: [
             const Header(
@@ -23,14 +22,15 @@ class AppDataScreen extends StatelessWidget {
             const SizedBox(height: defaultPadding),
             Row(
               children: [
-                const Expanded(
-                  flex: 3,
-                  child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Categories(),
-                        SizedBox(height: defaultPadding),
-                      ]),
+                Expanded(
+                  flex: 4,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Expanded(flex: 3, child: DocumentTreeWidget()),
+                      Expanded(flex: 4, child: Container()),
+                    ],
+                  ),
                 ),
                 if (!Responsive.isMobile(context)) ...[
                   const SizedBox(width: defaultPadding),
@@ -45,7 +45,15 @@ class AppDataScreen extends StatelessWidget {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Expanded(flex: 3, child: DocumentTreeWidget()),
+                        const Expanded(
+                          flex: 3,
+                          child: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                // Categories(),
+                                SizedBox(height: defaultPadding),
+                              ]),
+                        ),
                         Expanded(flex: 4, child: Container()),
                       ],
                     ),

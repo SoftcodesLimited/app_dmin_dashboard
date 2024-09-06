@@ -2,16 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:myapp/mixins/firebase_update_function_helpers.dart';
-import 'package:myapp/utils/shimmer_container.dart';
+import 'package:myapp/screens/appdata/components/loading_tree.dart';
+import 'package:myapp/utils/constants.dart';
 import 'package:myapp/utils/tree_widget/tree_view.dart';
 
-enum ElementType { document, collection }
+enum ElementType { document, collection, field, parentfield }
 
 class FirestoreElement {
-  FirestoreElement(this.name, this.type);
+  FirestoreElement(
+    this.name,
+    this.type,
+  );
 
   final String name;
   final ElementType type;
+  late dynamic data;
 }
 
 class DocumentTreeWidget extends StatefulWidget {
@@ -45,7 +50,7 @@ class _DocumentTreeWidgetState extends State<DocumentTreeWidget>
 
       return TreeNode<FirestoreElement>(
         Key(doc.id),
-        FirestoreElement(doc.id, ElementType.collection),
+        FirestoreElement(doc.id, ElementType.document),
         fieldNodes,
       );
     }).toList();
@@ -63,10 +68,12 @@ class _DocumentTreeWidgetState extends State<DocumentTreeWidget>
 
       if (value is Map) {
         final childNodes =
-            _buildFieldNodes(convertToMap(value as Map<dynamic, dynamic>));
+            _buildFieldNodes(convertToMap(value));
+        var element = FirestoreElement(key, ElementType.parentfield);
+        element.data = value;
         return TreeNode<FirestoreElement>(
           Key(key),
-          FirestoreElement('$key (Map)', ElementType.collection),
+          element,
           childNodes,
         );
       } else if (value is List) {
@@ -76,20 +83,22 @@ class _DocumentTreeWidgetState extends State<DocumentTreeWidget>
 
           return TreeNode<FirestoreElement>(
             Key('$key[$index]'),
-            FirestoreElement('$key[$index]: $listItem', ElementType.document),
+            FirestoreElement('$key[$index]: $listItem', ElementType.field),
             [],
           );
         }).toList();
 
         return TreeNode<FirestoreElement>(
           Key(key),
-          FirestoreElement('$key (List)', ElementType.collection),
+          FirestoreElement('$key (List)', ElementType.parentfield),
           childNodes,
         );
       } else {
+        var element = FirestoreElement('$key: $value', ElementType.field);
+        element.data = value;
         return TreeNode<FirestoreElement>(
           Key(key),
-          FirestoreElement('$key: $value', ElementType.document),
+          element,
           [],
         );
       }
@@ -170,8 +179,9 @@ class _DocumentTreeWidgetState extends State<DocumentTreeWidget>
                     setState(() {
                       _selectedNode = node;
                       final firestorePath = _generateFirestorePath(node);
+                      print('${node.data.name}: ${node.data.data}');
                       print('Firestore Path: $firestorePath');
-                      showUpdateDialog();
+                      //showUpdateDialog();
                     });
                   },
                   child: Container(
@@ -192,12 +202,79 @@ class _DocumentTreeWidgetState extends State<DocumentTreeWidget>
                             width: 5,
                           )
                         ],
+                        if (node.data.type == ElementType.parentfield) ...[
+                          SvgPicture.asset(
+                            'assets/icons/mapIcon.svg',
+                            height: 12,
+                            width: 12,
+                            colorFilter: const ColorFilter.mode(
+                                Colors.white, BlendMode.srcIn),
+                          ),
+                          const SizedBox(
+                            width: 5,
+                          )
+                        ],
+                        if (node.data.type == ElementType.field) ...[
+                          SvgPicture.asset(
+                            'assets/icons/fieldIcon.svg',
+                            height: 12,
+                            width: 12,
+                            colorFilter: const ColorFilter.mode(
+                                Colors.white, BlendMode.srcIn),
+                          ),
+                          const SizedBox(
+                            width: 5,
+                          )
+                        ],
                         Expanded(
                           child: Text(
                             node.data.name,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontSize: 12),
+                            style: const TextStyle(fontSize: 15),
                           ),
+                        ),
+                        PopupMenuButton<String>(
+                          color: secondaryColor,
+                          shadowColor: const Color.fromARGB(91, 0, 0, 0),
+                          onSelected: (String result) {
+                            // Handle the selected option
+                            print('Selected option: $result');
+                            // Add your action logic here
+                          },
+                          itemBuilder: (BuildContext context) => [
+                            PopupMenuItem<String>(
+                              onTap: () {},
+                              height: 30,
+                              value: 'Edit',
+                              child: const Row(
+                                children: [
+                                  Icon(Icons.edit, size: 16),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Edit',
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            PopupMenuItem<String>(
+                              onTap: () {},
+                              height: 30,
+                              value: 'Edit',
+                              child: const Row(
+                                children: [
+                                  Icon(Icons.edit, size: 16),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Edit',
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            // Add more options here if needed
+                          ],
+                          icon: const Icon(Icons.more_horiz, size: 16),
                         ),
                       ],
                     ),
@@ -218,71 +295,7 @@ class _DocumentTreeWidgetState extends State<DocumentTreeWidget>
               },
             ),
           )
-        : SizedBox(
-            height: MediaQuery.of(context).size.height * 0.9,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    ShimmerContainer(
-                      height: 15,
-                      width: 15,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                    const SizedBox(
-                      width: 10,
-                    ),
-                    ShimmerContainer(
-                      height: 10,
-                      width: 150,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ],
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                Row(
-                  children: [
-                    ShimmerContainer(
-                      height: 15,
-                      width: 15,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                    const SizedBox(
-                      width: 10,
-                    ),
-                    ShimmerContainer(
-                      height: 10,
-                      width: 120,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ],
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                Row(
-                  children: [
-                    ShimmerContainer(
-                      height: 15,
-                      width: 15,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                    const SizedBox(
-                      width: 10,
-                    ),
-                    ShimmerContainer(
-                      height: 10,
-                      width: 120,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ],
-                )
-              ],
-            ),
-          );
+        : const TreeLoadingWidget();
   }
 
   void showUpdateDialog() {
