@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:myapp/screens/appdata/components/document_tree_widget.dart';
+import 'package:myapp/screens/appdata/components/treenode_ui_extension.dart';
 import 'package:myapp/utils/tree_widget/tree_view.dart';
 
 class SelectedNodeUiWidget extends StatefulWidget {
@@ -28,12 +29,19 @@ class _SelectedNodeUiWidgetState extends State<SelectedNodeUiWidget> {
       );
     }
 
-    final element = selectedNode.data;
+    /* final element = selectedNode.data;
     final nodeName = element.name;
     final nodeType = element.type.toString().split('.').last;
-    final nodeData = element.data;
+    final nodeData = element.data;*/
 
-    return Card(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(formatPath(widget.path ?? ''),
+            style: const TextStyle(color: Colors.green)),
+        selectedNode.buildWidget(context, widget.path),
+      ],
+    ); /* Card(
       elevation: 2,
       margin: const EdgeInsets.all(16),
       child: Padding(
@@ -43,7 +51,6 @@ class _SelectedNodeUiWidgetState extends State<SelectedNodeUiWidget> {
           children: [
             Text(
               'Node Details',
-              // style: Theme.of(context).textTheme.headline6,
             ),
             const SizedBox(height: 8),
             _buildDetailRow('Name:', nodeName),
@@ -61,7 +68,12 @@ class _SelectedNodeUiWidgetState extends State<SelectedNodeUiWidget> {
           ],
         ),
       ),
-    );
+    ); */
+  }
+
+  String formatPath(String path) {
+    String fmtdPath = path.replaceAll('.', ' > ');
+    return fmtdPath;
   }
 
   /// Helper method to build a row for displaying details

@@ -89,8 +89,7 @@ class _DocumentTreeWidgetState extends State<DocumentTreeWidget>
         final childNodes = value.asMap().entries.map((listEntry) {
           final index = listEntry.key;
           final listItem = listEntry.value;
-          var element =
-              FirestoreElement('$key[$index]: $listItem', ElementType.field);
+          var element = FirestoreElement('$key[$index]', ElementType.field);
           element.data = listItem;
           return TreeNode<FirestoreElement>(
             Key('$key[$index]'),
@@ -108,7 +107,7 @@ class _DocumentTreeWidgetState extends State<DocumentTreeWidget>
         );
       } else {
         // Handle primitive fields
-        var element = FirestoreElement('$key: $value', ElementType.field);
+        var element = FirestoreElement(key, ElementType.field);
         element.data = value;
         return TreeNode<FirestoreElement>(
           Key(key),
@@ -208,10 +207,16 @@ class _DocumentTreeWidgetState extends State<DocumentTreeWidget>
                 return GestureDetector(
                   onTap: () {
                     select(node);
+
+                    // Notify the ValueNotifiers with new values
                     widget.selectedNodeNotifier.value = node;
+
                     setState(() {
                       _selectedNode = node;
                       final firestorePath = _generateFirestorePath(node);
+
+                      // Notify the path value change
+                      widget.firestorePath.value = firestorePath;
 
                       if (node.data.data != null) {
                         print('${node.data.name}: ${node.data.data}');
