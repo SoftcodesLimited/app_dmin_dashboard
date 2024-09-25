@@ -218,10 +218,10 @@ class _DocumentTreeWidgetState extends State<DocumentTreeWidget>
                       // Notify the path value change
                       widget.firestorePath.value = firestorePath;
 
-                      if (node.data.data != null) {
+                     /*  if (node.data.data != null) {
                         print('${node.data.name}: ${node.data.data}');
-                      }
-                      print('Firestore Path: $firestorePath');
+                      } */
+                      debugPrint('Firestore Path: $firestorePath');
                     });
                   },
                   child: _buildTreeNodeItem(node),

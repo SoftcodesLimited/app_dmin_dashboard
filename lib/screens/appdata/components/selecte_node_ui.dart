@@ -8,10 +8,12 @@ class SelectedNodeUiWidget extends StatefulWidget {
     super.key,
     required this.selectedNode,
     required this.path,
+    required this.treeNotifier,  // Add treeNotifier as a required field
   });
 
   final String? path;
   final TreeNode<FirestoreElement>? selectedNode;
+  final ValueNotifier<List<TreeNode<FirestoreElement>>> treeNotifier;  // Declare treeNotifier
 
   @override
   State<SelectedNodeUiWidget> createState() => _SelectedNodeUiWidgetState();
@@ -29,46 +31,18 @@ class _SelectedNodeUiWidgetState extends State<SelectedNodeUiWidget> {
       );
     }
 
-    /* final element = selectedNode.data;
-    final nodeName = element.name;
-    final nodeType = element.type.toString().split('.').last;
-    final nodeData = element.data;*/
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(formatPath(widget.path ?? ''),
             style: const TextStyle(color: Colors.green)),
-        selectedNode.buildWidget(context, widget.path),
-      ],
-    ); /* Card(
-      elevation: 2,
-      margin: const EdgeInsets.all(16),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Node Details',
-            ),
-            const SizedBox(height: 8),
-            _buildDetailRow('Name:', nodeName),
-            _buildDetailRow('Type:', nodeType),
-            _buildDetailRow('Path:', path),
-            _buildDetailRow('Data:', nodeData.toString()),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                // You can add edit or any other logic here.
-                showUpdateDialog(nodeName);
-              },
-              child: const Text("Edit Node"),
-            ),
-          ],
+        selectedNode.buildWidget(
+          context, 
+          widget.path, 
+          widget.treeNotifier, // Pass treeNotifier here
         ),
-      ),
-    ); */
+      ],
+    );
   }
 
   String formatPath(String path) {
