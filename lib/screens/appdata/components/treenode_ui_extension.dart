@@ -6,15 +6,32 @@ import 'package:myapp/utils/constants.dart';
 import 'package:myapp/utils/tree_widget/tree_view.dart';
 
 extension UiBuild<T> on TreeNode<T> {
+  void update(value, path) async {
+    final parts = path.split('.');
+    final documentPath = parts.first;
+    final fieldPath = parts.sublist(1).join('.');
+
+    final documentReference =
+        FirebaseFirestore.instance.collection('AppData').doc(documentPath);
+    debugPrint('Updating: $path');
+    await documentReference
+        .update({
+          fieldPath: value,
+        })
+        .then((_) {})
+        .catchError((error) {
+          debugPrint('Failed to update: $error');
+        });
+  }
+
   Widget buildWidget(BuildContext context, String? path) {
-    // Check if the data is of type FirestoreElement
     if (data is! FirestoreElement) {
       return Container();
     }
 
     final firestoreElement = data as FirestoreElement;
-    final ValueNotifier<bool> _isEditing = ValueNotifier<bool>(false);
-    final TextEditingController _controller =
+    final ValueNotifier<bool> editing = ValueNotifier<bool>(false);
+    final TextEditingController controller =
         TextEditingController(text: firestoreElement.data.toString());
 
     return Stack(
@@ -39,11 +56,11 @@ extension UiBuild<T> on TreeNode<T> {
                 const Spacer(),
                 GestureDetector(
                   onTap: () {
-                    _isEditing.value = true;
+                    editing.value = true;
                   },
-                  child: Icon(
+                  child: const Icon(
                     Icons.edit,
-                    color: Colors.blue,
+                    color: Colors.white,
                   ),
                 ),
               ],
@@ -51,7 +68,7 @@ extension UiBuild<T> on TreeNode<T> {
           ],
         ),
         ValueListenableBuilder<bool>(
-          valueListenable: _isEditing,
+          valueListenable: editing,
           builder: (context, isEditing, child) {
             return Visibility(
               visible: isEditing,
@@ -60,7 +77,7 @@ extension UiBuild<T> on TreeNode<T> {
                   color: Colors.black.withOpacity(0.5),
                   child: Center(
                     child: Container(
-                      padding: const EdgeInsets.all(8),
+                      padding: const EdgeInsets.all(5),
                       decoration: BoxDecoration(
                         color: secondaryColor,
                         borderRadius: BorderRadius.circular(5),
@@ -69,46 +86,28 @@ extension UiBuild<T> on TreeNode<T> {
                         ),
                       ),
                       child: Column(
-                        // mainAxisSize: MainAxisSize.min,
                         children: [
                           CupertinoTextField(
-                            decoration: BoxDecoration(
-                                /* color: secondaryColor,
-                              borderRadius: BorderRadius.circular(5),
-                              border: Border.all(
-                                color: Colors.grey,
-                              ), */
-                                ),
-                            controller: _controller,
+                            decoration: const BoxDecoration(),
+                            controller: controller,
+                            style: const TextStyle(color: Colors.white),
+                            onSubmitted: (value) {
+                              update(controller.text, path);
+                              editing.value = false;
+                            },
                           ),
                           const SizedBox(height: 16),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
                               ElevatedButton(
-                                onPressed: () async {
-                                  // Update Firestore with the new value
-                                  await FirebaseFirestore.instance
-                                      .collection(
-                                          'AppData') // Replace with your collection
-                                      .doc(
-                                          path) // Use the path for document reference
-                                      .update({
-                                    firestoreElement.name: _controller
-                                        .text, // Update with new value
-                                  }).then((_) {
-                                    print('Updated successfully!');
-                                    _isEditing.value = false;
-                                  }).catchError((error) {
-                                    print('Failed to update: $error');
-                                  });
-                                },
+                                onPressed: () async {},
                                 child: const Text('OK'),
                               ),
                               const SizedBox(width: 8),
                               ElevatedButton(
                                 onPressed: () {
-                                  _isEditing.value = false;
+                                  editing.value = false;
                                 },
                                 child: const Text('Cancel'),
                               ),
