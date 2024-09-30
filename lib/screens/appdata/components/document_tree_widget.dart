@@ -2,19 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:myapp/mixins/firebase_update_function_helpers.dart';
+import 'package:myapp/screens/appdata/components/firestore_element.dart';
 import 'package:myapp/screens/appdata/components/loading_tree.dart';
 import 'package:myapp/utils/constants.dart';
 import 'package:myapp/utils/tree_widget/tree_view.dart';
 
-enum ElementType { document, collection, field, parentfield }
 
-class FirestoreElement {
-  FirestoreElement(this.name, this.type);
-
-  final String name;
-  final ElementType type;
-  late dynamic data;
-}
 
 class DocumentTreeWidget extends StatefulWidget {
   const DocumentTreeWidget({
@@ -33,7 +26,7 @@ class DocumentTreeWidget extends StatefulWidget {
 class _DocumentTreeWidgetState extends State<DocumentTreeWidget>
     with FirebaseFunctions {
   final treeViewKey = const TreeViewKey<FirestoreElement>();
-  TreeNode<FirestoreElement>? _selectedNode;
+
   List<TreeNode<FirestoreElement>> _firestoreTree = [];
   bool loading = true;
 
@@ -153,41 +146,6 @@ class _DocumentTreeWidgetState extends State<DocumentTreeWidget>
     return null;
   }
 
-  /// Modifies the selected node's data in Firestore
-  Future<void> _modifySelectedNode(String newValue) async {
-    if (_selectedNode != null) {
-      final path = _generateFirestorePath(_selectedNode!);
-      final db = FirebaseFirestore.instance;
-
-      await db.collection('AppData').doc(_selectedNode!.data.name).update({
-        path: newValue,
-      });
-
-      setState(() {
-        _selectedNode = null; // Clear the selected node after update
-      });
-    }
-  }
-
-  /// Shows a dialog to update the selected node's data
-  void showUpdateDialog() {
-    TextEditingController updateController = TextEditingController();
-    showDialog(
-        context: context,
-        builder: (context) {
-          updateController.text = _selectedNode!.data.name;
-          return SimpleDialog(
-            contentPadding: const EdgeInsets.all(16),
-            title: Text('Update ${_selectedNode!.data.name}'),
-            children: [
-              TextField(
-                controller: updateController,
-              )
-            ],
-          );
-        });
-  }
-
   @override
   Widget build(BuildContext context) {
     return !loading
@@ -207,20 +165,10 @@ class _DocumentTreeWidgetState extends State<DocumentTreeWidget>
                 return GestureDetector(
                   onTap: () {
                     select(node);
-
-                    // Notify the ValueNotifiers with new values
                     widget.selectedNodeNotifier.value = node;
-
                     setState(() {
-                      _selectedNode = node;
                       final firestorePath = _generateFirestorePath(node);
-
-                      // Notify the path value change
                       widget.firestorePath.value = firestorePath;
-
-                     /*  if (node.data.data != null) {
-                        print('${node.data.name}: ${node.data.data}');
-                      } */
                       debugPrint('Firestore Path: $firestorePath');
                     });
                   },
@@ -294,11 +242,11 @@ class _DocumentTreeWidgetState extends State<DocumentTreeWidget>
       color: secondaryColor,
       shadowColor: const Color.fromARGB(91, 0, 0, 0),
       onSelected: (String result) {
-        print('Selected option: $result');
+        debugPrint('Selected option: $result');
         // Add your action logic here
       },
       itemBuilder: (BuildContext context) => [
-        PopupMenuItem<String>(
+       const  PopupMenuItem<String>(
           value: 'Edit',
           child: const Row(
             children: [

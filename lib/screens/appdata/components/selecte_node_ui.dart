@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:myapp/screens/appdata/components/document_tree_widget.dart';
+import 'package:myapp/screens/appdata/components/firestore_element.dart';
 import 'package:myapp/screens/appdata/components/treenode_ui_extension.dart';
 import 'package:myapp/utils/tree_widget/tree_view.dart';
 
@@ -8,12 +8,13 @@ class SelectedNodeUiWidget extends StatefulWidget {
     super.key,
     required this.selectedNode,
     required this.path,
-    required this.treeNotifier,  // Add treeNotifier as a required field
+    required this.treeNotifier, // Add treeNotifier as a required field
   });
 
   final String? path;
   final TreeNode<FirestoreElement>? selectedNode;
-  final ValueNotifier<List<TreeNode<FirestoreElement>>> treeNotifier;  // Declare treeNotifier
+  final ValueNotifier<List<TreeNode<FirestoreElement>>>
+      treeNotifier; // Declare treeNotifier
 
   @override
   State<SelectedNodeUiWidget> createState() => _SelectedNodeUiWidgetState();
@@ -31,17 +32,22 @@ class _SelectedNodeUiWidgetState extends State<SelectedNodeUiWidget> {
       );
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(formatPath(widget.path ?? ''),
-            style: const TextStyle(color: Colors.green)),
-        selectedNode.buildWidget(
-          context, 
-          widget.path, 
-          widget.treeNotifier, // Pass treeNotifier here
-        ),
-      ],
+    return ValueListenableBuilder<List<TreeNode<FirestoreElement>>>(
+      valueListenable: widget.treeNotifier,
+      builder: (context, value, child) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(formatPath(widget.path ?? ''),
+                style: const TextStyle(color: Colors.green)),
+            selectedNode.buildWidget(
+              context,
+              widget.path,
+              widget.treeNotifier, // Pass treeNotifier here
+            ),
+          ],
+        );
+      },
     );
   }
 

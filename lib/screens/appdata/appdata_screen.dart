@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:myapp/screens/appdata/components/document_tree_widget.dart';
+import 'package:myapp/screens/appdata/components/firestore_element.dart';
 import 'package:myapp/screens/appdata/components/selecte_node_ui.dart';
 import 'package:myapp/utils/responsive.dart';
 import 'package:myapp/screens/dashboard/components/header.dart';
@@ -13,7 +14,7 @@ class AppDataScreen extends StatelessWidget {
       ValueNotifier<TreeNode<FirestoreElement>?>(null);
   final ValueNotifier<String?> firestorePath = ValueNotifier<String?>(null);
   final ValueNotifier<List<TreeNode<FirestoreElement>>> _treeNotifier =
-    ValueNotifier<List<TreeNode<FirestoreElement>>>([]);
+      ValueNotifier<List<TreeNode<FirestoreElement>>>([]);
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +55,8 @@ class AppDataScreen extends StatelessWidget {
                                     return SelectedNodeUiWidget(
                                       selectedNode: selectedNode,
                                       path: path,
-                                      treeNotifier: _treeNotifier, // Pass treeNotifier
+                                      treeNotifier:
+                                          _treeNotifier, // Pass treeNotifier
                                     );
                                   },
                                 );
@@ -77,28 +79,8 @@ class AppDataScreen extends StatelessWidget {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(
-                          flex: 5,
-                          child: ValueListenableBuilder<TreeNode<FirestoreElement>?>(
-                            valueListenable: _selectedNodeNotifier,
-                            builder: (context, selectedNode, child) {
-                              return ValueListenableBuilder<String?>(
-                                valueListenable: firestorePath,
-                                builder: (context, path, child) {
-                                  return SelectedNodeUiWidget(
-                                    selectedNode: selectedNode,
-                                    path: path,
-                                    treeNotifier: _treeNotifier, // Pass treeNotifier
-                                  );
-                                },
-                              );
-                            },
-                          ),
-                        ),
-                        Expanded(
-                          flex: 4,
-                          child: Container(), // Placeholder for other widgets
-                        ),
+                        Expanded(flex: 5, child: Container()),
+                        Expanded(flex: 4, child: Container()),
                       ],
                     ),
                   ),

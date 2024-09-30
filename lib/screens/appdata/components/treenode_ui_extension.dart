@@ -1,39 +1,58 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:myapp/screens/appdata/components/document_tree_widget.dart';
+import 'package:myapp/screens/appdata/components/firestore_element.dart';
 import 'package:myapp/utils/constants.dart';
 import 'package:myapp/utils/tree_widget/tree_view.dart';
 
 extension UiBuild<T> on TreeNode<T> {
-  void update(String value, String path, ValueNotifier<List<TreeNode<T>>> treeNotifier) async {
+  void update(
+    String value,
+    String path,
+    ValueNotifier<List<TreeNode<T>>> treeNotifier,
+    ValueNotifier<bool> isUpdating,
+  ) async {
+    isUpdating.value = true; // Set isUpdating to true before update starts
+
     final parts = path.split('.');
     final documentPath = parts.first;
     final fieldPath = parts.sublist(1).join('.');
 
-    final documentReference = FirebaseFirestore.instance.collection('AppData').doc(documentPath);
+    final documentReference =
+        FirebaseFirestore.instance.collection('AppData').doc(documentPath);
     debugPrint('Updating: $path');
 
-    await documentReference
-        .update({fieldPath: value})
-        .then((_) {
-          // Update the local node data
-          //data = value;
-          treeNotifier.notifyListeners(); // Trigger a UI rebuild
-        })
-        .catchError((error) {
-          debugPrint('Failed to update: $error');
-        });
+    await documentReference.update({fieldPath: value}).then((_) {
+      debugPrint('Firestore updated successfully.');
+
+      // Update the local node data
+      if (data is FirestoreElement) {
+        final firestoreElement = data as FirestoreElement;
+        firestoreElement.data = value;
+
+        // Notify listeners after updating the tree structure
+        treeNotifier.value = List<TreeNode<T>>.from(treeNotifier.value);
+        debugPrint('UI updated with new value: $value');
+        isUpdating.value =
+            false; // Set isUpdating to false after update completes
+      }
+    }).catchError((error) {
+      debugPrint('Failed to update: $error');
+      isUpdating.value = false; // Set isUpdating to false if the update fails
+    });
   }
 
-  Widget buildWidget(BuildContext context, String? path, ValueNotifier<List<TreeNode<T>>> treeNotifier) {
+  Widget buildWidget(BuildContext context, String? path,
+      ValueNotifier<List<TreeNode<T>>> treeNotifier) {
     if (data is! FirestoreElement) {
       return Container();
     }
 
+    final ValueNotifier<bool> isUpdating = ValueNotifier<bool>(false);
     final firestoreElement = data as FirestoreElement;
     final ValueNotifier<bool> editing = ValueNotifier<bool>(false);
-    final TextEditingController controller = TextEditingController(text: firestoreElement.data.toString());
+    final TextEditingController controller =
+        TextEditingController(text: firestoreElement.data.toString());
 
     if (firestoreElement.type == ElementType.field) {
       return Stack(
@@ -49,21 +68,39 @@ extension UiBuild<T> on TreeNode<T> {
                 children: [
                   const SizedBox(width: 16),
                   Expanded(
-                    child: Text(
-                      firestoreElement.data.toString(),
-                      style: const TextStyle(color: Colors.grey),
-                      overflow: TextOverflow.ellipsis,
+                    child: Column(
+                      children: [
+                        Text(
+                          firestoreElement.data.toString(),
+                          style: const TextStyle(color: Colors.grey),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
                     ),
                   ),
                   const Spacer(),
-                  GestureDetector(
-                    onTap: () {
-                      editing.value = true;
+                  ValueListenableBuilder<bool>(
+                    valueListenable: isUpdating,
+                    builder: (context, updating, child) {
+                      return updating
+                          ? const SizedBox(
+                              width: 15,
+                              height: 15,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 1.0,
+                              ),
+                            )
+                          : GestureDetector(
+                              onTap: () {
+                                editing.value = true;
+                              },
+                              child: const Icon(
+                                Icons.edit,
+                                color: Colors.white,
+                                size: 12,
+                              ),
+                            );
                     },
-                    child: const Icon(
-                      Icons.edit,
-                      color: Colors.white,
-                    ),
                   ),
                 ],
               ),
@@ -94,8 +131,13 @@ extension UiBuild<T> on TreeNode<T> {
                               controller: controller,
                               style: const TextStyle(color: Colors.white),
                               onSubmitted: (value) {
-                                update(controller.text, path!, treeNotifier);
                                 editing.value = false;
+                                update(
+                                  controller.text,
+                                  path!,
+                                  treeNotifier,
+                                  isUpdating,
+                                );
                               },
                             ),
                             const SizedBox(height: 16),
@@ -103,9 +145,14 @@ extension UiBuild<T> on TreeNode<T> {
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
                                 ElevatedButton(
-                                  onPressed: () async {
-                                    update(controller.text, path!, treeNotifier);
+                                  onPressed: () {
                                     editing.value = false;
+                                    update(
+                                      controller.text,
+                                      path!,
+                                      treeNotifier,
+                                      isUpdating,
+                                    );
                                   },
                                   child: const Text('OK'),
                                 ),
@@ -130,7 +177,6 @@ extension UiBuild<T> on TreeNode<T> {
         ],
       );
     } else {
-      // Handle if the element is not a field, possibly a collection or document
       return GestureDetector(
         onTap: () {
           // Define what happens on tap, like navigating to its children
@@ -139,15 +185,16 @@ extension UiBuild<T> on TreeNode<T> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              firestoreElement.name, // Display the name of the collection or document
+              firestoreElement
+                  .name, // Display the name of the collection or document
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            // Optionally, display the content if it's a nested map or a collection
             firestoreElement.data is Map
                 ? Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: (firestoreElement.data as Map).entries.map((entry) {
+                    children:
+                        (firestoreElement.data as Map).entries.map((entry) {
                       return Text('${entry.key}: ${entry.value}');
                     }).toList(),
                   )
