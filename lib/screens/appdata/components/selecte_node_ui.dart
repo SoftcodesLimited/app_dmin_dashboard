@@ -8,13 +8,12 @@ class SelectedNodeUiWidget extends StatefulWidget {
     super.key,
     required this.selectedNode,
     required this.path,
-    required this.treeNotifier, // Add treeNotifier as a required field
+    required this.treeNotifier,
   });
 
   final String? path;
   final TreeNode<FirestoreElement>? selectedNode;
-  final ValueNotifier<List<TreeNode<FirestoreElement>>>
-      treeNotifier; // Declare treeNotifier
+  final ValueNotifier<List<TreeNode<FirestoreElement>>> treeNotifier;
 
   @override
   State<SelectedNodeUiWidget> createState() => _SelectedNodeUiWidgetState();
@@ -38,14 +37,12 @@ class _SelectedNodeUiWidgetState extends State<SelectedNodeUiWidget> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(formatPath(widget.path ?? ''),
-                style: const TextStyle(color: Colors.green)),
-            const SizedBox(height: 15),
-            selectedNode.buildWidget(
-              context,
-              widget.path,
-              widget.treeNotifier, // Pass treeNotifier here
+            Text(
+              formatPath(widget.path ?? ''),
+              style: const TextStyle(color: Colors.green),
             ),
+            const SizedBox(height: 15),
+            selectedNode.buildWidget(context, widget.path, widget.treeNotifier),
           ],
         );
       },
@@ -55,53 +52,5 @@ class _SelectedNodeUiWidgetState extends State<SelectedNodeUiWidget> {
   String formatPath(String path) {
     String fmtdPath = path.replaceAll('.', ' > ');
     return fmtdPath;
-  }
-
-  /// Helper method to build a row for displaying details
-  Widget _buildDetailRow(String title, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Row(
-        children: [
-          Text(
-            title,
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              value,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Dummy function to handle edit (to be replaced with actual logic)
-  void showUpdateDialog(String nodeName) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        TextEditingController updateController =
-            TextEditingController(text: nodeName);
-        return AlertDialog(
-          title: Text('Edit $nodeName'),
-          content: TextField(
-            controller: updateController,
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                // Implement your update logic here
-                Navigator.pop(context);
-              },
-              child: const Text('Save'),
-            ),
-          ],
-        );
-      },
-    );
   }
 }
