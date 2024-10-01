@@ -45,177 +45,164 @@ extension UiBuild<T> on TreeNode<T> {
 
   Widget buildWidget(BuildContext context, String? path,
       ValueNotifier<List<TreeNode<T>>> treeNotifier) {
+    final firestoreElement = data as FirestoreElement;
+
     if (data is! FirestoreElement) {
       return Container();
     }
 
+    switch (firestoreElement.type) {
+      case ElementType.field:
+        return buidUiForElementField(
+            context, path, treeNotifier, firestoreElement);
+      default:
+        return GestureDetector(
+          onTap: () {
+            // Define what happens on tap, like navigating to its children
+          },
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                firestoreElement
+                    .name, // Display the name of the collection or document
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              firestoreElement.data is Map
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children:
+                          (firestoreElement.data as Map).entries.map((entry) {
+                        return Text('${entry.key}: ${entry.value}');
+                      }).toList(),
+                    )
+                  : Container(),
+            ],
+          ),
+        );
+    }
+  }
+
+  Widget buidUiForElementField(
+      BuildContext context,
+      String? path,
+      ValueNotifier<List<TreeNode<T>>> treeNotifier,
+      FirestoreElement firestoreElement) {
     final ValueNotifier<bool> isUpdating = ValueNotifier<bool>(false);
-    final firestoreElement = data as FirestoreElement;
+
     final ValueNotifier<bool> editing = ValueNotifier<bool>(false);
     final TextEditingController controller =
         TextEditingController(text: firestoreElement.data.toString());
 
-    if (firestoreElement.type == ElementType.field) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            firestoreElement.name,
-            overflow: TextOverflow.ellipsis,
-          ),
-          ValueListenableBuilder<bool>(
-              valueListenable: editing,
-              builder: (context, edit, child) {
-                return !edit
-                    ? Row(
-                        children: [
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(firestoreElement.name, overflow: TextOverflow.ellipsis),
+        ValueListenableBuilder<bool>(
+            valueListenable: editing,
+            builder: (context, edit, child) {
+              return !edit
+                  ? Row(
+                      children: [
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            children: [
+                              Text(
+                                firestoreElement.data.toString(),
+                                style: const TextStyle(color: Colors.grey),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Spacer(),
+                        ValueListenableBuilder<bool>(
+                          valueListenable: isUpdating,
+                          builder: (context, updating, child) {
+                            return updating
+                                ? const SizedBox(
+                                    width: 15,
+                                    height: 15,
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 1.0),
+                                  )
+                                : GestureDetector(
+                                    onTap: () {
+                                      editing.value = true;
+                                    },
+                                    child: const Icon(Icons.edit,
+                                        color: Colors.white, size: 12),
+                                  );
+                          },
+                        ),
+                      ],
+                    )
+                  : Center(
+                      child: Container(
+                        padding: const EdgeInsets.all(5),
+                        decoration: BoxDecoration(
+                          color: secondaryColor,
+                          borderRadius: BorderRadius.circular(5),
+                          border: Border.all(
+                            color: Colors.grey,
+                          ),
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize
+                              .min, // Ensure the column sizes to its content
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                  color:
+                                      const Color.fromARGB(25, 255, 255, 255),
+                                  borderRadius: BorderRadius.circular(10)),
+                              child: CupertinoTextField(
+                                decoration: const BoxDecoration(),
+                                controller: controller,
+                                style: const TextStyle(color: Colors.white),
+                                onSubmitted: (value) {
+                                  editing.value = false;
+                                  update(controller.text, path!, treeNotifier,
+                                      isUpdating);
+                                },
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
                               children: [
-                                Text(
-                                  firestoreElement.data.toString(),
-                                  style: const TextStyle(color: Colors.grey),
-                                  overflow: TextOverflow.ellipsis,
+                                CustomButton(
+                                  height: 30,
+                                  width: 60,
+                                  color: Colors.blue,
+                                  borderRadius: BorderRadius.circular(10),
+                                  onPressed: () {
+                                    editing.value = false;
+                                    update(controller.text, path!, treeNotifier,
+                                        isUpdating);
+                                  },
+                                  child: const Center(child: Text('OK')),
+                                ),
+                                const SizedBox(width: 8),
+                                CustomButton(
+                                  height: 30,
+                                  width: 60,
+                                  borderRadius: BorderRadius.circular(10),
+                                  onPressed: () {
+                                    editing.value = false;
+                                  },
+                                  child: const Text('Cancel'),
                                 ),
                               ],
                             ),
-                          ),
-                          const Spacer(),
-                          ValueListenableBuilder<bool>(
-                            valueListenable: isUpdating,
-                            builder: (context, updating, child) {
-                              return updating
-                                  ? const SizedBox(
-                                      width: 15,
-                                      height: 15,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 1.0,
-                                      ),
-                                    )
-                                  : Hero(
-                                    tag: 'edit',
-                                    child: GestureDetector(
-                                        onTap: () {
-                                          editing.value = true;
-                                        },
-                                        child: const Icon(
-                                          Icons.edit,
-                                          color: Colors.white,
-                                          size: 12,
-                                        ),
-                                      ),
-                                  );
-                            },
-                          ),
-                        ],
-                      )
-                    : Hero(
-                      tag: 'edit',
-                      child: Container(
-                          color: Colors.black.withOpacity(
-                              0.5), // Optional: Semi-transparent background
-                          child: Center(
-                            child: Container(
-                              padding: const EdgeInsets.all(5),
-                              decoration: BoxDecoration(
-                                color: secondaryColor,
-                                borderRadius: BorderRadius.circular(5),
-                                border: Border.all(
-                                  color: Colors.grey,
-                                ),
-                              ),
-                              child: Column(
-                                mainAxisSize: MainAxisSize
-                                    .min, // Ensure the column sizes to its content
-                                children: [
-                                  Container(
-                                    decoration: BoxDecoration(
-                                        color: const Color.fromARGB(
-                                            25, 255, 255, 255),
-                                        borderRadius: BorderRadius.circular(10)),
-                                    child: CupertinoTextField(
-                                      decoration: const BoxDecoration(),
-                                      controller: controller,
-                                      style: const TextStyle(color: Colors.white),
-                                      onSubmitted: (value) {
-                                        editing.value = false;
-                                        update(
-                                          controller.text,
-                                          path!,
-                                          treeNotifier,
-                                          isUpdating,
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                  const SizedBox(height: 20),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      CustomButton(
-                                        height: 30,
-                                        width: 60,
-                                        color: Colors.blue,
-                                        borderRadius: BorderRadius.circular(10),
-                                        onPressed: () {
-                                          editing.value = false;
-                                          update(
-                                            controller.text,
-                                            path!,
-                                            treeNotifier,
-                                            isUpdating,
-                                          );
-                                        },
-                                        child: const Center(child: Text('OK')),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      CustomButton(
-                                        height: 30,
-                                        width: 60,
-                                        borderRadius: BorderRadius.circular(10),
-                                        onPressed: () {
-                                          editing.value = false;
-                                        },
-                                        child: const Text('Cancel'),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
+                          ],
                         ),
+                      ),
                     );
-              }),
-        ],
-      );
-    } else {
-      return GestureDetector(
-        onTap: () {
-          // Define what happens on tap, like navigating to its children
-        },
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              firestoreElement
-                  .name, // Display the name of the collection or document
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            firestoreElement.data is Map
-                ? Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children:
-                        (firestoreElement.data as Map).entries.map((entry) {
-                      return Text('${entry.key}: ${entry.value}');
-                    }).toList(),
-                  )
-                : Container(),
-          ],
-        ),
-      );
-    }
+            }),
+      ],
+    );
   }
 }
