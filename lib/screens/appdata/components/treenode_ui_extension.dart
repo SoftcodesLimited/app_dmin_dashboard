@@ -1,48 +1,12 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/screens/appdata/components/firestore_element.dart';
+import 'package:myapp/screens/appdata/components/treenode_update_extension.dart';
 import 'package:myapp/utils/constants.dart';
 import 'package:myapp/utils/custom_button.dart';
 import 'package:myapp/utils/tree_widget/tree_view.dart';
 
 extension UiBuild<T> on TreeNode<T> {
-  void update(
-    String value,
-    String path,
-    ValueNotifier<List<TreeNode<T>>> treeNotifier,
-    ValueNotifier<bool> isUpdating,
-  ) async {
-    isUpdating.value = true; // Set isUpdating to true before update starts
-
-    final parts = path.split('.');
-    final documentPath = parts.first;
-    final fieldPath = parts.sublist(1).join('.');
-
-    final documentReference =
-        FirebaseFirestore.instance.collection('AppData').doc(documentPath);
-    debugPrint('Updating: $path');
-
-    await documentReference.update({fieldPath: value}).then((_) {
-      debugPrint('Firestore updated successfully.');
-
-      // Update the local node data
-      if (data is FirestoreElement) {
-        final firestoreElement = data as FirestoreElement;
-        firestoreElement.data = value;
-
-        // Notify listeners after updating the tree structure
-        treeNotifier.value = List<TreeNode<T>>.from(treeNotifier.value);
-        debugPrint('UI updated with new value: $value');
-        isUpdating.value =
-            false; // Set isUpdating to false after update completes
-      }
-    }).catchError((error) {
-      debugPrint('Failed to update: $error');
-      isUpdating.value = false; // Set isUpdating to false if the update fails
-    });
-  }
-
   Widget buildWidget(BuildContext context, String? path,
       ValueNotifier<List<TreeNode<T>>> treeNotifier) {
     final firestoreElement = data as FirestoreElement;
@@ -54,6 +18,9 @@ extension UiBuild<T> on TreeNode<T> {
     switch (firestoreElement.type) {
       case ElementType.field:
         return buidUiForElementField(
+            context, path, treeNotifier, firestoreElement);
+      case ElementType.parentfield:
+        return buildUiForParentFields(
             context, path, treeNotifier, firestoreElement);
       default:
         return GestureDetector(
@@ -82,6 +49,14 @@ extension UiBuild<T> on TreeNode<T> {
           ),
         );
     }
+  }
+
+  Widget buildUiForParentFields(
+      BuildContext context,
+      String? path,
+      ValueNotifier<List<TreeNode<T>>> treeNotifier,
+      FirestoreElement firestoreElement) {
+    return Container();
   }
 
   Widget buidUiForElementField(
