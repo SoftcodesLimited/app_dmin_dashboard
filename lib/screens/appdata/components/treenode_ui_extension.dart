@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/screens/appdata/components/firestore_element.dart';
 import 'package:myapp/utils/constants.dart';
+import 'package:myapp/utils/custom_button.dart';
 import 'package:myapp/utils/tree_widget/tree_view.dart';
 
 extension UiBuild<T> on TreeNode<T> {
@@ -55,125 +56,138 @@ extension UiBuild<T> on TreeNode<T> {
         TextEditingController(text: firestoreElement.data.toString());
 
     if (firestoreElement.type == ElementType.field) {
-      return Stack(
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                firestoreElement.name,
-                overflow: TextOverflow.ellipsis,
-              ),
-              Row(
-                children: [
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      children: [
-                        Text(
-                          firestoreElement.data.toString(),
-                          style: const TextStyle(color: Colors.grey),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Spacer(),
-                  ValueListenableBuilder<bool>(
-                    valueListenable: isUpdating,
-                    builder: (context, updating, child) {
-                      return updating
-                          ? const SizedBox(
-                              width: 15,
-                              height: 15,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 1.0,
-                              ),
-                            )
-                          : GestureDetector(
-                              onTap: () {
-                                editing.value = true;
-                              },
-                              child: const Icon(
-                                Icons.edit,
-                                color: Colors.white,
-                                size: 12,
-                              ),
-                            );
-                    },
-                  ),
-                ],
-              ),
-            ],
+          Text(
+            firestoreElement.name,
+            overflow: TextOverflow.ellipsis,
           ),
           ValueListenableBuilder<bool>(
-            valueListenable: editing,
-            builder: (context, isEditing, child) {
-              return Visibility(
-                visible: isEditing,
-                child: Positioned.fill(
-                  child: Container(
-                    color: Colors.black.withOpacity(0.5),
-                    child: Center(
-                      child: Container(
-                        padding: const EdgeInsets.all(5),
-                        decoration: BoxDecoration(
-                          color: secondaryColor,
-                          borderRadius: BorderRadius.circular(5),
-                          border: Border.all(
-                            color: Colors.grey,
-                          ),
-                        ),
-                        child: Column(
-                          children: [
-                            CupertinoTextField(
-                              decoration: const BoxDecoration(),
-                              controller: controller,
-                              style: const TextStyle(color: Colors.white),
-                              onSubmitted: (value) {
-                                editing.value = false;
-                                update(
-                                  controller.text,
-                                  path!,
-                                  treeNotifier,
-                                  isUpdating,
-                                );
-                              },
-                            ),
-                            const SizedBox(height: 16),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
+              valueListenable: editing,
+              builder: (context, edit, child) {
+                return !edit
+                    ? Row(
+                        children: [
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
                               children: [
-                                ElevatedButton(
-                                  onPressed: () {
-                                    editing.value = false;
-                                    update(
-                                      controller.text,
-                                      path!,
-                                      treeNotifier,
-                                      isUpdating,
-                                    );
-                                  },
-                                  child: const Text('OK'),
-                                ),
-                                const SizedBox(width: 8),
-                                ElevatedButton(
-                                  onPressed: () {
-                                    editing.value = false;
-                                  },
-                                  child: const Text('Cancel'),
+                                Text(
+                                  firestoreElement.data.toString(),
+                                  style: const TextStyle(color: Colors.grey),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ],
                             ),
-                          ],
+                          ),
+                          const Spacer(),
+                          ValueListenableBuilder<bool>(
+                            valueListenable: isUpdating,
+                            builder: (context, updating, child) {
+                              return updating
+                                  ? const SizedBox(
+                                      width: 15,
+                                      height: 15,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 1.0,
+                                      ),
+                                    )
+                                  : Hero(
+                                    tag: 'edit',
+                                    child: GestureDetector(
+                                        onTap: () {
+                                          editing.value = true;
+                                        },
+                                        child: const Icon(
+                                          Icons.edit,
+                                          color: Colors.white,
+                                          size: 12,
+                                        ),
+                                      ),
+                                  );
+                            },
+                          ),
+                        ],
+                      )
+                    : Hero(
+                      tag: 'edit',
+                      child: Container(
+                          color: Colors.black.withOpacity(
+                              0.5), // Optional: Semi-transparent background
+                          child: Center(
+                            child: Container(
+                              padding: const EdgeInsets.all(5),
+                              decoration: BoxDecoration(
+                                color: secondaryColor,
+                                borderRadius: BorderRadius.circular(5),
+                                border: Border.all(
+                                  color: Colors.grey,
+                                ),
+                              ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize
+                                    .min, // Ensure the column sizes to its content
+                                children: [
+                                  Container(
+                                    decoration: BoxDecoration(
+                                        color: const Color.fromARGB(
+                                            25, 255, 255, 255),
+                                        borderRadius: BorderRadius.circular(10)),
+                                    child: CupertinoTextField(
+                                      decoration: const BoxDecoration(),
+                                      controller: controller,
+                                      style: const TextStyle(color: Colors.white),
+                                      onSubmitted: (value) {
+                                        editing.value = false;
+                                        update(
+                                          controller.text,
+                                          path!,
+                                          treeNotifier,
+                                          isUpdating,
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                  const SizedBox(height: 20),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      CustomButton(
+                                        height: 30,
+                                        width: 60,
+                                        color: Colors.blue,
+                                        borderRadius: BorderRadius.circular(10),
+                                        onPressed: () {
+                                          editing.value = false;
+                                          update(
+                                            controller.text,
+                                            path!,
+                                            treeNotifier,
+                                            isUpdating,
+                                          );
+                                        },
+                                        child: const Center(child: Text('OK')),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      CustomButton(
+                                        height: 30,
+                                        width: 60,
+                                        borderRadius: BorderRadius.circular(10),
+                                        onPressed: () {
+                                          editing.value = false;
+                                        },
+                                        child: const Text('Cancel'),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
+                    );
+              }),
         ],
       );
     } else {
