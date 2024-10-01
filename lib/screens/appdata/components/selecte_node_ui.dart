@@ -40,6 +40,7 @@ class _SelectedNodeUiWidgetState extends State<SelectedNodeUiWidget> {
           children: [
             Text(formatPath(widget.path ?? ''),
                 style: const TextStyle(color: Colors.green)),
+            const SizedBox(height: 15),
             selectedNode.buildWidget(
               context,
               widget.path,

@@ -56,6 +56,52 @@ extension UiBuild<T> on TreeNode<T> {
       String? path,
       ValueNotifier<List<TreeNode<T>>> treeNotifier,
       FirestoreElement firestoreElement) {
+    List<String> pathParts = path!.split('.');
+    String parent = pathParts[0];
+
+    switch (parent) {
+      case "products":
+        return Container(
+          padding: const EdgeInsets.all(5),
+          decoration: BoxDecoration(
+            color: secondaryColor,
+            borderRadius: BorderRadius.circular(5),
+            border: Border.all(
+              color: Colors.grey,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 10),
+              Text(
+                firestoreElement.data["name"],
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
+              const SizedBox(height: 15),
+              Image(image: NetworkImage(firestoreElement.data["image"])),
+              const SizedBox(height: 15),
+              const Text("desc", style: TextStyle(color: Colors.grey)),
+              const SizedBox(
+                height: 10,
+              ),
+              Text(firestoreElement.data["desc"]),
+              const SizedBox(height: 15),
+              const Text("Video", style: TextStyle(color: Colors.grey)),
+              const SizedBox(height: 10),
+              Text(firestoreElement.data["Videourl"] ?? ''),
+              const SizedBox(height: 15),
+              const Text("Web Url", style: TextStyle(color: Colors.grey)),
+              const SizedBox(height: 10),
+              Text(firestoreElement.data["weburl"])
+            ],
+          ),
+        );
+    }
+
     return Container();
   }
 
