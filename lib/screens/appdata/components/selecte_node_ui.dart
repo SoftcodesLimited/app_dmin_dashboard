@@ -34,16 +34,19 @@ class _SelectedNodeUiWidgetState extends State<SelectedNodeUiWidget> {
     return ValueListenableBuilder<List<TreeNode<FirestoreElement>>>(
       valueListenable: widget.treeNotifier,
       builder: (context, value, child) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              formatPath(widget.path ?? ''),
-              style: const TextStyle(color: Colors.green),
-            ),
-            const SizedBox(height: 15),
-            selectedNode.buildWidget(context, widget.path, widget.treeNotifier),
-          ],
+        return SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                formatPath(widget.path ?? ''),
+                style: const TextStyle(color: Colors.green),
+              ),
+              const SizedBox(height: 15),
+              selectedNode.buildWidget(
+                  context, widget.path, widget.treeNotifier),
+            ],
+          ),
         );
       },
     );

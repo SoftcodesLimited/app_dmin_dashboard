@@ -22,6 +22,8 @@ extension UiBuild<T> on TreeNode<T> {
       case ElementType.parentfield:
         return buildUiForParentFields(
             context, path, treeNotifier, firestoreElement);
+      case ElementType.document:
+        return buildDocumentUi(context, path, treeNotifier, firestoreElement);
       default:
         return GestureDetector(
           onTap: () {
@@ -51,6 +53,14 @@ extension UiBuild<T> on TreeNode<T> {
     }
   }
 
+  Widget buildDocumentUi(
+      BuildContext context,
+      String? path,
+      ValueNotifier<List<TreeNode<T>>> treeNotifier,
+      FirestoreElement firestoreElement) {
+        return Container();
+      }
+
   Widget buildUiForParentFields(
       BuildContext context,
       String? path,
@@ -61,48 +71,54 @@ extension UiBuild<T> on TreeNode<T> {
 
     switch (parent) {
       case "products":
-        return Container(
-          padding: const EdgeInsets.all(5),
-          decoration: BoxDecoration(
-            color: secondaryColor,
-            borderRadius: BorderRadius.circular(5),
-            border: Border.all(
-              color: Colors.grey,
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 10),
-              Text(
-                firestoreElement.data["name"],
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
-              ),
-              const SizedBox(height: 15),
-              Image(image: NetworkImage(firestoreElement.data["image"])),
-              const SizedBox(height: 15),
-              const Text("desc", style: TextStyle(color: Colors.grey)),
-              const SizedBox(
-                height: 10,
-              ),
-              Text(firestoreElement.data["desc"]),
-              const SizedBox(height: 15),
-              const Text("Video", style: TextStyle(color: Colors.grey)),
-              const SizedBox(height: 10),
-              Text(firestoreElement.data["Videourl"] ?? ''),
-              const SizedBox(height: 15),
-              const Text("Web Url", style: TextStyle(color: Colors.grey)),
-              const SizedBox(height: 10),
-              Text(firestoreElement.data["weburl"])
-            ],
-          ),
-        );
+        return buildIndividualproduct(firestoreElement);
     }
 
     return Container();
+  }
+
+  Widget buildIndividualproduct(FirestoreElement firestoreElement) {
+    return Container(
+      width: 500,
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: secondaryColor,
+        borderRadius: BorderRadius.circular(5),
+        border: Border.all(
+          color: Colors.grey,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 10),
+          Text(
+            firestoreElement.data["name"],
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
+          ),
+          const SizedBox(height: 15),
+          Image(
+              image: NetworkImage(firestoreElement.data["image"]), height: 300),
+          const SizedBox(height: 15),
+          const Text("desc", style: TextStyle(color: Colors.grey)),
+          const SizedBox(
+            height: 10,
+          ),
+          Text(firestoreElement.data["desc"]),
+          const SizedBox(height: 15),
+          const Text("Video", style: TextStyle(color: Colors.grey)),
+          const SizedBox(height: 10),
+          Text(firestoreElement.data["Videourl"] ?? ''),
+          const SizedBox(height: 15),
+          const Text("Web Url", style: TextStyle(color: Colors.grey)),
+          const SizedBox(height: 10),
+          Text(firestoreElement.data["weburl"])
+        ],
+      ),
+    );
   }
 
   Widget buidUiForElementField(

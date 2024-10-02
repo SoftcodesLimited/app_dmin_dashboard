@@ -41,7 +41,7 @@ class AppDataScreen extends StatelessWidget {
                         ),
                       ),
                       Expanded(
-                        flex: 4,
+                        flex: 6,
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -75,7 +75,7 @@ class AppDataScreen extends StatelessWidget {
                 ],
                 if (!Responsive.isMobile(context))
                   Expanded(
-                    flex: 5,
+                    flex: 2,
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
