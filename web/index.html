@@ -1,21 +1,8 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
-
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
-
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
   <base href="$FLUTTER_BASE_HREF">
-
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="A new Flutter project.">
@@ -27,12 +14,146 @@
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="icon" type="image/png" href="favicon.png" />
 
-  <title>myapp</title>
+  <title>SoftCodes Admin</title>
   <link rel="manifest" href="manifest.json">
+  <style>
+    /* Full screen canvas loader style */
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    #loadingCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: #2A2D3E;
+      z-index: 9999;
+    }
+
+    /* Hide the loader when Flutter is ready */
+    .hide-loader {
+      display: none;
+    }
+  </style>
 </head>
+
 <body>
+  <!-- Loader Canvas -->
+  <canvas id="loadingCanvas"></canvas>
+
+  <!-- This script block will run your custom JavaScript animation -->
+  <script>
+    class Util {
+      pi() { return Math.PI; }
+      twoPi() { return 2 * this.pi(); }
+      rand(min, max) { return Math.random() * (max - min) + min; }
+      circle(ctx, x, y, radius) {
+        var radius = radius <= 0 ? 1 : radius;
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, this.twoPi(), false);
+      }
+      fillCircle(ctx, x, y, radius, fillStyle) {
+        this.circle(ctx, x, y, radius);
+        ctx.fillStyle = fillStyle;
+        ctx.fill();
+      }
+      strokeCircle(ctx, x, y, radius, strokeStyle, lineWidth) {
+        this.circle(ctx, x, y, radius);
+        ctx.lineWidth = lineWidth;
+        ctx.strokeStyle = strokeStyle;
+        ctx.stroke();
+      }
+    }
+
+    class ProgressIndicator {
+      constructor(x, y, radius, context) {
+        this.x = x;
+        this.y = y;
+        this.radius = radius;
+        this.context = context;
+        this.rippleRadius = radius;
+        this.rippleIncrement = 0.2; // Ripple effect
+        this.progress = 0;
+        this.angleOffset = 0;
+        this.setup();
+        this.animate();
+      }
+
+      setup() {
+        this.util = new Util();
+        this.lightness = 50;
+        this.saturation = 100;
+        this.hue = 200; // Default hue for color
+        this.fillStyle = `hsla(${this.hue}, ${this.saturation}%, ${this.lightness}%, 0.1)`;
+        this.strokeStyle = `hsla(${this.hue}, ${this.saturation}%, ${this.lightness}%, 1)`;
+        this.rippleMaxRadius = this.radius * 1.5; // Max ripple radius
+      }
+
+      animate() {
+        this.progress += 0.01;
+        if (this.progress >= 1) this.progress = 0;
+        this.angleOffset += 0.05; // Rotate arc smoothly
+
+        this.rippleRadius = this.radius + Math.sin(this.progress * this.util.twoPi()) * this.radius / 2;
+
+        this.context.clearRect(0, 0, window.innerWidth, window.innerHeight); // Clear each frame
+        this.render();
+        requestAnimationFrame(() => this.animate());
+      }
+
+      render() {
+        this.util.strokeCircle(this.context, this.x, this.y, this.rippleRadius, this.fillStyle, 2);
+        this.util.fillCircle(this.context, this.x, this.y, this.radius, this.fillStyle);
+
+        let mod = this.util.twoPi() * this.progress;
+        let startAngle = mod + this.angleOffset;
+        let endAngle = startAngle + this.util.pi() / 2;
+
+        this.util.strokeCircle(this.context, this.x, this.y, this.radius - 0.5, this.strokeStyle, 1.5);
+
+        this.context.lineWidth = 4;
+
+        // Rotating arcs
+        this.context.beginPath();
+        this.context.arc(this.x, this.y, this.radius - 0.5, startAngle, endAngle);
+        this.context.stroke();
+
+        // Opposite side arc
+        this.context.beginPath();
+        this.context.arc(this.x, this.y, this.radius - 0.5, startAngle + this.util.pi(), endAngle + this.util.pi());
+        this.context.stroke();
+
+        // Small center dot
+        this.context.fillStyle = this.strokeStyle;
+        this.context.fillRect(this.x - 1, this.y - 1, 2, 2);
+      }
+    }
+
+    window.onload = function () {
+      let canvas = document.getElementById('loadingCanvas');
+      let ctx = canvas.getContext('2d');
+      let width = canvas.width = window.innerWidth;
+      let height = canvas.height = window.innerHeight;
+
+      let indicator = new ProgressIndicator(width / 2, height / 2, 100, ctx);
+    }
+  </script>
+
+  <script>
+    // Hide the loader when Flutter is ready
+    window.addEventListener('flutter-first-frame', function () {
+      document.getElementById('loadingCanvas').classList.add('hide-loader');
+    });
+  </script>
+
+  <!-- Load the Flutter web app -->
   <script src="flutter_bootstrap.js" async></script>
 </body>
+
 </html>
