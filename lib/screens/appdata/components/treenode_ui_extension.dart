@@ -58,8 +58,16 @@ extension UiBuild<T> on TreeNode<T> {
       String? path,
       ValueNotifier<List<TreeNode<T>>> treeNotifier,
       FirestoreElement firestoreElement) {
-        return Container();
-      }
+    List<String> pathParts = path!.split('.');
+    String parent = pathParts[0];
+
+    switch (parent) {
+      case "products":
+        return buildProducts(context, firestoreElement);
+    }
+
+    return Container();
+  }
 
   Widget buildUiForParentFields(
       BuildContext context,
@@ -75,6 +83,94 @@ extension UiBuild<T> on TreeNode<T> {
     }
 
     return Container();
+  }
+
+  Widget buildProducts(context, FirestoreElement firestoreElement) {
+    Map products = firestoreElement.data;
+    int itemCount = products.length;
+
+    return SizedBox(
+      height: MediaQuery.of(context).size.height * 0.7,
+      child: GridView.builder(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3, // Number of columns
+              crossAxisSpacing: 10, // Space between columns
+              mainAxisSpacing: 10,
+              childAspectRatio: 1.5),
+          itemCount: itemCount,
+          itemBuilder: (context, index) {
+            final productKey = products.keys.elementAt(index);
+            final product = products[productKey]!;
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('$productKey'),
+                const SizedBox(height: 5),
+                Container(
+                  //padding:
+                  decoration: BoxDecoration(
+                    color: secondaryColor,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: Colors.grey,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(5),
+                        child: Text(
+                          product["name"]!,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      ClipRRect(
+                        borderRadius: const BorderRadius.vertical(
+                          bottom: Radius.circular(10),
+                        ),
+                        child: Image.network(
+                          product['image']!,
+                          fit: BoxFit.contain,
+                          // Placeholder while the image loads
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) {
+                              return child; // Image has loaded
+                            }
+                            // While loading, show a circular progress indicator
+                            return Center(
+                              child: CircularProgressIndicator(
+                                value: loadingProgress.expectedTotalBytes !=
+                                        null
+                                    ? loadingProgress.cumulativeBytesLoaded /
+                                        (loadingProgress.expectedTotalBytes ??
+                                            1)
+                                    : null,
+                              ),
+                            );
+                          },
+                          // Error handler when the image fails to load
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Center(
+                              child: Icon(
+                                Icons.error,
+                                color: Colors.red,
+                                size: 50,
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          }),
+    );
   }
 
   Widget buildIndividualproduct(FirestoreElement firestoreElement) {
