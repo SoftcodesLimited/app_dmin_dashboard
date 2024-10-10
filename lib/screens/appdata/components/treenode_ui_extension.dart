@@ -93,8 +93,8 @@ extension UiBuild<T> on TreeNode<T> {
       height: MediaQuery.of(context).size.height * 0.7,
       child: GridView.builder(
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3, // Number of columns
-              crossAxisSpacing: 10, // Space between columns
+              crossAxisCount: 3,
+              crossAxisSpacing: 10,
               mainAxisSpacing: 10,
               childAspectRatio: 1.5),
           itemCount: itemCount,

@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:myapp/screens/appdata/components/document_tree_widget.dart';
 import 'package:myapp/screens/appdata/components/firestore_element.dart';
 import 'package:myapp/screens/appdata/components/selecte_node_ui.dart';
+import 'package:myapp/utils/overlay_header_option.dart';
 import 'package:myapp/utils/responsive.dart';
 import 'package:myapp/screens/dashboard/components/header.dart';
+import 'package:myapp/utils/simple_ptions_overlay_widget.dart';
 import 'package:myapp/utils/tree_widget/tree_view.dart';
 import '../../utils/constants.dart';
 
@@ -24,7 +26,19 @@ class AppDataScreen extends StatelessWidget {
         padding: const EdgeInsets.all(defaultPadding),
         child: Column(
           children: [
-            const Header(title: 'App Data'),
+            const Header(
+              title: 'App Data',
+              options: [
+                OverlayHeaderOption(
+                  icon: 'assets/icons/add-circle.svg',
+                  title: 'Add',
+                  overlayWidget: SimpleOverlayWidget(
+                    options: ['Product', 'Notification'],
+                    title: 'What to add',
+                  ),
+                )
+              ],
+            ),
             const SizedBox(height: defaultPadding),
             Row(
               children: [

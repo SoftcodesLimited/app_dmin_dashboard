@@ -22,7 +22,7 @@ class Header extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
           color: secondaryColor, borderRadius: BorderRadius.circular(20)),
-      padding: EdgeInsets.all(8),
+      padding: const EdgeInsets.all(8),
       child: Row(
         children: [
           if (!Responsive.isDesktop(context))
@@ -49,7 +49,7 @@ class Header extends StatelessWidget {
           const SizedBox(
             width: 100,
           ),
-          Expanded(child: SearchField()),
+          const Expanded(child: SearchField()),
 
           if (!Responsive.isMobile(context))
             Spacer(
@@ -62,7 +62,7 @@ class Header extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: options!,
               ),
-          ProfileCard()
+          const ProfileCard()
         ],
       ),
     );
@@ -71,14 +71,14 @@ class Header extends StatelessWidget {
 
 class ProfileCard extends StatefulWidget {
   const ProfileCard({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
-  _ProfileCardState createState() => _ProfileCardState();
+  ProfileCardState createState() => ProfileCardState();
 }
 
-class _ProfileCardState extends State<ProfileCard> {
+class ProfileCardState extends State<ProfileCard> {
   OverlayEntry? _overlayEntry;
   bool _isOverlayVisible = false;
 
@@ -87,14 +87,14 @@ class _ProfileCardState extends State<ProfileCard> {
     return GestureDetector(
       onTap: () => _toggleOverlay(context),
       child: Container(
-        margin: EdgeInsets.only(left: 16.0),
-        padding: EdgeInsets.symmetric(
+        margin: const EdgeInsets.only(left: 16.0),
+        padding: const EdgeInsets.symmetric(
           horizontal: 16.0,
           vertical: 8.0,
         ),
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           color: secondaryColor,
-          borderRadius: const BorderRadius.all(Radius.circular(10)),
+          borderRadius: BorderRadius.all(Radius.circular(10)),
           // border: Border.all(color: Colors.white10),
         ),
         child: Row(
@@ -113,7 +113,7 @@ class _ProfileCardState extends State<ProfileCard> {
                 padding: EdgeInsets.symmetric(horizontal: 8.0),
                 child: Text("Katherine Edison"),
               ),
-            Icon(Icons.keyboard_arrow_down),
+            const Icon(Icons.keyboard_arrow_down),
           ],
         ),
       ),
@@ -165,7 +165,7 @@ class _ProfileCardState extends State<ProfileCard> {
             child: Material(
               color: Colors.transparent,
               child: Container(
-                padding: EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(16.0),
                 decoration: BoxDecoration(
                     color: secondaryColor,
                     borderRadius: const BorderRadius.all(Radius.circular(10)),
@@ -198,19 +198,19 @@ class _ProfileCardState extends State<ProfileCard> {
             width: 50,
           ),
         ),
-        SizedBox(height: 5),
-        Text(
+        const SizedBox(height: 5),
+        const Text(
           "John Doe",
           style: TextStyle(color: Colors.white),
         ),
-        SizedBox(height: 5),
-        Text(
+        const SizedBox(height: 5),
+        const Text(
           "johndoe@eaxample.com",
           style: TextStyle(color: Colors.grey),
         ),
-        SizedBox(height: 30),
+        const SizedBox(height: 30),
         CupertinoButton(
-            child: Text(
+            child: const Text(
               'SignOut',
               style: TextStyle(color: Colors.red, fontSize: 15),
             ),
@@ -222,45 +222,15 @@ class _ProfileCardState extends State<ProfileCard> {
 
 class SearchField extends StatelessWidget {
   const SearchField({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
     return CupertinoSearchTextField(
       prefixIcon: Container(),
-      style: TextStyle(color: Colors.white),
-    ); /* TextField(
-      decoration: InputDecoration(
-        hintText: "Search",
-        fillColor: const Color.fromARGB(73, 110, 118, 160),
-        filled: true,
-        
-        border: const OutlineInputBorder(
-          gapPadding: 1,
-          borderSide: BorderSide.none, //BorderSide.none,
-          borderRadius: BorderRadius.all(Radius.circular(15)),
-        ),
-        suffixIcon: InkWell(
-          onTap: () {},
-          child: Container(
-            padding: EdgeInsets.all(defaultPadding * 0.85),
-            margin: EdgeInsets.symmetric(horizontal: defaultPadding / 2),
-            width: 70,
-            decoration: const BoxDecoration(
-                color: primaryColor,
-                borderRadius: BorderRadius.all(Radius.circular(15)),
-                boxShadow: [
-                  BoxShadow(
-                      color: Color.fromARGB(26, 0, 0, 0),
-                      offset: Offset(-5, 5),
-                      blurRadius: 5),
-                ]),
-            child: SvgPicture.asset("assets/icons/Search.svg"),
-          ),
-        ),
-      ),
-    ); */
+      style: const TextStyle(color: Colors.white),
+    );
   }
 }
 
