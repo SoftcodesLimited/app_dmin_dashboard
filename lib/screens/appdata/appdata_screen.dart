@@ -32,10 +32,13 @@ class AppDataScreen extends StatelessWidget {
                 OverlayHeaderOption(
                   icon: 'assets/icons/add-circle.svg',
                   title: 'Add',
-                  overlayWidget: SimpleOverlayWidget(
-                    options: ['Product', 'Notification'],
-                    title: 'What to add',
-                  ),
+                  options: [
+                    'Product',
+                    'Skilling Pkg',
+                    'Slider Image',
+                    'Feed',
+                    'Best Deal',
+                  ],
                 )
               ],
             ),

@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:myapp/utils/constants.dart';
+import 'package:myapp/utils/simple_ptions_overlay_widget.dart';
 
 class OverlayHeaderOption extends StatefulWidget {
   final String title;
   final String icon;
-  final Widget? overlayWidget;
+
+  final List<String> options;
 
   const OverlayHeaderOption({
     super.key,
     required this.icon,
     required this.title,
-    this.overlayWidget,
+    required this.options,
   });
 
   @override
@@ -84,7 +86,12 @@ class OverlayHeaderOptionState extends State<OverlayHeaderOption> {
                           offset: Offset(5, 5),
                           blurRadius: 5)
                     ]),
-                child: widget.overlayWidget ?? Container(),
+                child: SimpleOverlayWidget(
+                  options: widget.options,
+                  toggleVisibility: () {
+                    _toggleOverlay(context);
+                  },
+                ),
               ),
             ),
           ),

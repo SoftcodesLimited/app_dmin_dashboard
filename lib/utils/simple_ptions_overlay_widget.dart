@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 
 class SimpleOverlayWidget extends StatelessWidget {
-  final String? title;
-  final List<String> options;
+  final List<String>? options;
+  final void Function()? toggleVisibility;
   final void Function(String)? onOptionSelected;
 
   const SimpleOverlayWidget({
     super.key,
-    this.title,
     required this.options,
     this.onOptionSelected,
+    this.toggleVisibility,
   });
 
   @override
@@ -19,16 +19,21 @@ class SimpleOverlayWidget extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: options
-            .map((option) => GestureDetector(
-                  child: OptionWidget(optionName: option),
-                  onTap: () {
-                    if (onOptionSelected != null) {
-                      onOptionSelected!(option);
-                    }
-                  },
-                ))
-            .toList(),
+        children: options != null
+            ? options!
+                .map((option) => GestureDetector(
+                      child: OptionWidget(optionName: option),
+                      onTap: () {
+                        if (onOptionSelected != null) {
+                          toggleVisibility!();
+                          onOptionSelected!(option);
+                        } else {
+                          toggleVisibility!();
+                        }
+                      },
+                    ))
+                .toList()
+            : [],
       ),
     );
   }
@@ -51,7 +56,7 @@ class _OptionWidgetState extends State<OptionWidget> {
         _isHovered = true;
       }),
       onExit: (_) => setState(() {
-        _isHovered = _isHovered ? false : true;
+        _isHovered = false;
       }),
       child: Container(
           padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 8),
