@@ -8,12 +8,14 @@ class OverlayHeaderOption extends StatefulWidget {
   final String icon;
 
   final List<String> options;
+  final void Function(String)? onOptionSelected;
 
   const OverlayHeaderOption({
     super.key,
     required this.icon,
     required this.title,
     required this.options,
+    this.onOptionSelected,
   });
 
   @override
@@ -64,8 +66,7 @@ class OverlayHeaderOptionState extends State<OverlayHeaderOption> {
           GestureDetector(
             onTap: _hideOverlay,
             child: Container(
-              color: Colors
-                  .transparent, // Transparent background to detect outside clicks
+              color: Colors.transparent,
             ),
           ),
           Positioned(
@@ -75,7 +76,6 @@ class OverlayHeaderOptionState extends State<OverlayHeaderOption> {
             child: Material(
               color: Colors.transparent,
               child: Container(
-                //padding: const EdgeInsets.all(16.0),
                 decoration: BoxDecoration(
                     color: secondaryColor,
                     borderRadius: const BorderRadius.all(Radius.circular(10)),
@@ -88,6 +88,7 @@ class OverlayHeaderOptionState extends State<OverlayHeaderOption> {
                     ]),
                 child: SimpleOverlayWidget(
                   options: widget.options,
+                  onOptionSelected: widget.onOptionSelected,
                   toggleVisibility: () {
                     _toggleOverlay(context);
                   },

@@ -5,7 +5,6 @@ import 'package:myapp/screens/appdata/components/selecte_node_ui.dart';
 import 'package:myapp/utils/overlay_header_option.dart';
 import 'package:myapp/utils/responsive.dart';
 import 'package:myapp/screens/dashboard/components/header.dart';
-import 'package:myapp/utils/simple_ptions_overlay_widget.dart';
 import 'package:myapp/utils/tree_widget/tree_view.dart';
 import '../../utils/constants.dart';
 
@@ -26,13 +25,14 @@ class AppDataScreen extends StatelessWidget {
         padding: const EdgeInsets.all(defaultPadding),
         child: Column(
           children: [
-            const Header(
+            Header(
               title: 'App Data',
               options: [
                 OverlayHeaderOption(
                   icon: 'assets/icons/add-circle.svg',
                   title: 'Add',
-                  options: [
+                  onOptionSelected: addData,
+                  options: const <String>[
                     'Product',
                     'Skilling Pkg',
                     'Slider Image',
@@ -119,5 +119,9 @@ class AppDataScreen extends StatelessWidget {
         treeNotifier: _treeNotifier, // Ensure treeNotifier is passed
       );
     }
+  }
+
+  void addData(String selectedoption) {
+    debugPrint(selectedoption);
   }
 }

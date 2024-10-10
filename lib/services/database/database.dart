@@ -36,4 +36,8 @@ class FirestoreService {
         .collection('orders')
         .add(order.toMap());
   }
+
+  Stream<QuerySnapshot> getFeeds() {
+    return appData.doc('feeds').collection('feeds').snapshots();
+  }
 }

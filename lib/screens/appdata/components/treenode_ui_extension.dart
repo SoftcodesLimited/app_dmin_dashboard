@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/screens/appdata/components/firestore_element.dart';
 import 'package:myapp/screens/appdata/components/treenode_update_extension.dart';
+import 'package:myapp/services/database/database.dart';
 import 'package:myapp/utils/constants.dart';
 import 'package:myapp/utils/custom_button.dart';
 import 'package:myapp/utils/tree_widget/tree_view.dart';
@@ -64,6 +65,8 @@ extension UiBuild<T> on TreeNode<T> {
     switch (parent) {
       case "products":
         return buildProducts(context, firestoreElement);
+      case "feeds":
+        return buildFeeds(context);
     }
 
     return Container();
@@ -83,6 +86,88 @@ extension UiBuild<T> on TreeNode<T> {
     }
 
     return Container();
+  }
+
+  Widget buildFeeds(BuildContext context) {
+    return StreamBuilder(
+      stream: FirestoreService().getFeeds(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Center(child: Text(snapshot.error.toString()));
+        } else if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return const Center(child: Text("No feeds available."));
+        } else {
+          final documents = snapshot.data!.docs;
+
+          return SizedBox(
+            height: MediaQuery.of(context).size.height * 0.9,
+            child: ListView.builder(
+              itemCount: documents.length,
+              itemBuilder: (context, index) {
+                final document = documents[index];
+                List<String> imageList = [];
+
+                // Extract images from Firestore document
+                for (final image in document['images'].values) {
+                  imageList.add(image);
+                }
+
+                // Return a widget that displays the images (e.g., in a GridView)
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      document['title'],
+                      style: const TextStyle(
+                          fontSize: 15, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      document['writeUp'],
+                    ),
+                    const SizedBox(height: 8),
+                    GridView.builder(
+                      physics: const NeverScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2, // Adjust number of columns here
+                        crossAxisSpacing: 8,
+                        mainAxisSpacing: 8,
+                      ),
+                      itemCount: imageList.length,
+                      itemBuilder: (context, imageIndex) {
+                        return Image.network(
+                          imageList[imageIndex],
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              const Icon(Icons.error),
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return const Center(
+                                child: CircularProgressIndicator());
+                          },
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [Icon(CupertinoIcons.delete)],
+                    ),
+                    const Divider(),
+                    const SizedBox(height: 8),
+                  ],
+                );
+              },
+            ),
+          );
+        }
+      },
+    );
   }
 
   Widget buildProducts(context, FirestoreElement firestoreElement) {
@@ -141,24 +226,30 @@ extension UiBuild<T> on TreeNode<T> {
                               return child; // Image has loaded
                             }
                             // While loading, show a circular progress indicator
-                            return Center(
-                              child: CircularProgressIndicator(
-                                value: loadingProgress.expectedTotalBytes !=
-                                        null
-                                    ? loadingProgress.cumulativeBytesLoaded /
-                                        (loadingProgress.expectedTotalBytes ??
-                                            1)
-                                    : null,
+                            return SizedBox(
+                              height: 200,
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                  value: loadingProgress.expectedTotalBytes !=
+                                          null
+                                      ? loadingProgress.cumulativeBytesLoaded /
+                                          (loadingProgress.expectedTotalBytes ??
+                                              1)
+                                      : null,
+                                ),
                               ),
                             );
                           },
                           // Error handler when the image fails to load
                           errorBuilder: (context, error, stackTrace) {
-                            return const Center(
-                              child: Icon(
-                                Icons.error,
-                                color: Colors.red,
-                                size: 50,
+                            return const SizedBox(
+                              height: 200,
+                              child: Center(
+                                child: Icon(
+                                  Icons.error,
+                                  color: Colors.red,
+                                  size: 50,
+                                ),
                               ),
                             );
                           },
