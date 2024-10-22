@@ -1,10 +1,14 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/screens/appdata/components/document_tree_widget.dart';
 import 'package:myapp/screens/appdata/components/firestore_element.dart';
 import 'package:myapp/screens/appdata/components/selecte_node_ui.dart';
+import 'package:myapp/utils/custom_button.dart';
+import 'package:myapp/utils/customdialog.dart';
 import 'package:myapp/utils/overlay_header_option.dart';
 import 'package:myapp/utils/responsive.dart';
 import 'package:myapp/screens/dashboard/components/header.dart';
+import 'package:myapp/utils/touch_responsive_container.dart';
 import 'package:myapp/utils/tree_widget/tree_view.dart';
 import '../../utils/constants.dart';
 
@@ -31,7 +35,94 @@ class AppDataScreen extends StatelessWidget {
                 OverlayHeaderOption(
                   icon: 'assets/icons/add-circle.svg',
                   title: 'Add',
-                  onOptionSelected: addData,
+                  onOptionSelected: (String selectedoption) {
+                    debugPrint(selectedoption);
+                    switch (selectedoption) {
+                      case 'Feed':
+                        showAnimatedDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            dialogContent: CustomActionDialog(
+                              actions: [
+                                Spacer(),
+                                Spacer(),
+                                MyCustomButtom(
+                                  conerRadius: 8.0,
+                                  backgroundColor: Colors.blue,
+                                  onPressed: () {
+                                    Navigator.of(context).pop(false);
+                                  },
+                                  child: const Text("Add"),
+                                ),
+                              ],
+                              title: const Text(
+                                "Add Feed",
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              content: Column(
+                                children: [
+                                  Container(
+                                   /*  padding: EdgeInsets.all(8.0),
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(10),
+                                        color: const Color.fromARGB(
+                                            149, 42, 45, 62),
+                                        border: Border.all(
+                                            color: const Color.fromRGBO(
+                                                52, 73, 94, 1))), */
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        const SizedBox(height: 10),
+                                        const Text('Write Up'),
+                                        const SizedBox(height: 10),
+                                        CupertinoTextField(
+                                          style: const TextStyle(
+                                              color: Colors.white),
+                                          maxLines: 5,
+                                          decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(5),
+                                              color: const Color.fromARGB(
+                                                  149, 42, 45, 62),
+                                              border: Border.all(
+                                                  color: const Color.fromRGBO(
+                                                      52, 73, 94, 1))),
+                                        ),
+                                        const SizedBox(height: 10),
+                                        const Text('Upload photos'),
+                                        const SizedBox(height: 10),
+                                        Center(
+                                          child: TouchResponsiveContainer(
+                                            height: 100,
+                                            width: 600,
+                                            decoration: BoxDecoration(
+                                                borderRadius:
+                                                    BorderRadius.circular(5),
+                                                color: const Color.fromARGB(
+                                                    149, 42, 45, 62),
+                                                border: Border.all(
+                                                    color: const Color.fromARGB(
+                                                        81, 52, 73, 94))),
+                                            child: const Icon(
+                                              Icons
+                                                  .add_photo_alternate_outlined,
+                                              color:
+                                                  Color.fromRGBO(52, 73, 94, 1),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 20),
+                                      ],
+                                    ),
+                                  )
+                                ],
+                              ),
+                            ));
+                    }
+                  },
                   options: const <String>[
                     'Product',
                     'Skilling Pkg',
@@ -39,7 +130,7 @@ class AppDataScreen extends StatelessWidget {
                     'Feed',
                     'Best Deal',
                   ],
-                )
+                ),
               ],
             ),
             const SizedBox(height: defaultPadding),
@@ -119,9 +210,5 @@ class AppDataScreen extends StatelessWidget {
         treeNotifier: _treeNotifier, // Ensure treeNotifier is passed
       );
     }
-  }
-
-  void addData(String selectedoption) {
-    debugPrint(selectedoption);
   }
 }
