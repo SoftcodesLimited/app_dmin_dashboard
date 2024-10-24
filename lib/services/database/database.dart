@@ -1,4 +1,8 @@
+import 'dart:typed_data';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:myapp/models/messaging/message_model.dart';
 
 class FirestoreService {
@@ -39,5 +43,34 @@ class FirestoreService {
 
   Stream<QuerySnapshot> getFeeds() {
     return appData.doc('feeds').collection('feeds').snapshots();
+  }
+
+  Future<List<String>> uploadFeedImages(
+      {required List<XFile> selectedImages, required String title}) async {
+    List<String> imageUrls = [];
+
+    for (XFile image in selectedImages) {
+      try {
+        // Convert the image file to a byte array (Uint8List)
+        Uint8List imageData = await image.readAsBytes();
+
+        // Create a unique file path for the image in Firebase Storage
+        String filePath =
+            'feeds/${title}_${DateTime.now().millisecondsSinceEpoch}_${image.name}';
+
+        // Upload image to Firebase Storage
+        Reference storageRef = FirebaseStorage.instance.ref().child(filePath);
+        UploadTask uploadTask = storageRef.putData(imageData);
+        TaskSnapshot snapshot = await uploadTask;
+
+        // Get the URL of the uploaded image
+        String imageUrl = await snapshot.ref.getDownloadURL();
+        imageUrls.add(imageUrl);
+      } catch (e) {
+        print("Error uploading image: $e");
+      }
+    }
+
+    return imageUrls;
   }
 }
