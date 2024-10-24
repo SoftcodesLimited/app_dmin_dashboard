@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -233,20 +234,32 @@ extension UiBuild<T> on TreeNode<T> {
                             itemCount: imageList.length,
                             itemBuilder: (context, imageIndex) {
                               return ClipRRect(
-                                borderRadius: BorderRadius.circular(10),
-                                child: Image.network(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: /* Image.network(
                                   imageList[imageIndex],
                                   fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) =>
-                                      const Icon(Icons.error),
+                                  errorBuilder: (context, error, stackTrace) {
+                                    print('Image load error: $error');
+                                    return const Icon(Icons.error);
+                                  },
                                   loadingBuilder:
                                       (context, child, loadingProgress) {
                                     if (loadingProgress == null) return child;
                                     return const Center(
                                         child: CircularProgressIndicator());
                                   },
-                                ),
-                              );
+                                ), */
+                                      CachedNetworkImage(
+                                    imageUrl: imageList[imageIndex],
+                                    placeholder: (context, url) => SizedBox(
+                                        height: 60,
+                                        width: 60,
+                                        child:
+                                            const CircularProgressIndicator()),
+                                    errorWidget: (context, url, error) =>
+                                        const Icon(Icons.error),
+                                    fit: BoxFit.cover,
+                                  ));
                             },
                           ),
                           const SizedBox(height: 8),

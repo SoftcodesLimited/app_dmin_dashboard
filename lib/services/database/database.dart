@@ -55,19 +55,19 @@ class FirestoreService {
         Uint8List imageData = await image.readAsBytes();
 
         // Create a unique file path for the image in Firebase Storage
-        String filePath =
-            'feeds/${title}_${DateTime.now().millisecondsSinceEpoch}_${image.name}';
+        String filePath = 'feeds/${title}_${image.name}';
 
         // Upload image to Firebase Storage
         Reference storageRef = FirebaseStorage.instance.ref().child(filePath);
-        UploadTask uploadTask = storageRef.putData(imageData);
+        UploadTask uploadTask = storageRef.putData(
+            imageData, SettableMetadata(contentType: 'image/jpeg'));
         TaskSnapshot snapshot = await uploadTask;
 
         // Get the URL of the uploaded image
         String imageUrl = await snapshot.ref.getDownloadURL();
         imageUrls.add(imageUrl);
       } catch (e) {
-        print("Error uploading image: $e");
+        rethrow;
       }
     }
 
