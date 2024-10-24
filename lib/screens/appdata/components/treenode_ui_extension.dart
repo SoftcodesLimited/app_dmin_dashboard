@@ -125,8 +125,8 @@ extension UiBuild<T> on TreeNode<T> {
                       padding: const EdgeInsets.all(8.0),
                       decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(10),
-                          border:
-                              Border.all(color: const Color.fromRGBO(52, 73, 94, 1))),
+                          border: Border.all(
+                              color: const Color.fromRGBO(52, 73, 94, 1))),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -172,9 +172,8 @@ extension UiBuild<T> on TreeNode<T> {
                                   onPressed: () async {
                                     // Prompt user for confirmation before deletion
                                     showAnimatedDialog(
-                                        context:context,
-                                        dialogContent: 
-                                        MyAlertDialog(
+                                        context: context,
+                                        dialogContent: MyAlertDialog(
                                           actions: [
                                             MyCustomButtom(
                                               conerRadius: 8.0,
@@ -192,6 +191,8 @@ extension UiBuild<T> on TreeNode<T> {
                                               onPressed: () async {
                                                 // If the user confirms deletion, delete the document
                                                 await FirebaseFirestore.instance
+                                                    .collection('AppData')
+                                                    .doc('feeds')
                                                     .collection('feeds')
                                                     .doc(document
                                                         .id) // Use the document ID to delete
@@ -208,7 +209,8 @@ extension UiBuild<T> on TreeNode<T> {
                                           ),
                                           content: const Text(
                                               "Are you sure you want to delete this item?"),
-                                        ), barrierDismissible:  true);
+                                        ),
+                                        barrierDismissible: true);
                                   }),
                               const SizedBox(width: 10),
                             ],
