@@ -1,9 +1,11 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/utils/custom_button.dart';
 import 'package:myapp/utils/customdialog.dart';
+import 'package:myapp/utils/debuglogs.dart';
 import 'package:myapp/utils/touch_responsive_container.dart';
 
 class FeedWidget extends StatelessWidget {
@@ -11,6 +13,22 @@ class FeedWidget extends StatelessWidget {
   final List<String> imageList;
   const FeedWidget(
       {super.key, required this.document, required this.imageList});
+
+  Future<void> deleteImageFromStorage(List<String> images) async {
+    try {
+      for (String image in images) {
+        // Extract the file path from the download URL
+        final ref = FirebaseStorage.instance.refFromURL(image);
+
+        // Delete the file
+        await ref.delete();
+        debugLog(DebugLevel.info, 'image $image has been deleted sucessfully');
+      }
+    } catch (e) {
+      debugLog(DebugLevel.error,
+          'Failed to delet image due to error: ${e.toString()}');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -87,6 +105,8 @@ class FeedWidget extends StatelessWidget {
                                         .doc(document
                                             .id) // Use the document ID to delete
                                         .delete();
+
+                                    await deleteImageFromStorage(imageList);
                                   },
                                   child: const Text("Delete"),
                                 ),

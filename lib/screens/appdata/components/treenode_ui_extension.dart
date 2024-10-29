@@ -1,5 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:myapp/screens/appdata/components/feed_widget.dart';
@@ -8,8 +6,6 @@ import 'package:myapp/screens/appdata/components/treenode_update_extension.dart'
 import 'package:myapp/services/database/database.dart';
 import 'package:myapp/utils/constants.dart';
 import 'package:myapp/utils/custom_button.dart';
-import 'package:myapp/utils/customdialog.dart';
-import 'package:myapp/utils/touch_responsive_container.dart';
 import 'package:myapp/utils/tree_widget/tree_view.dart';
 
 extension UiBuild<T> on TreeNode<T> {

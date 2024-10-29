@@ -23,6 +23,7 @@ class _AddFeedDialogState extends State<AddFeedDialog> {
   List<XFile>? _selectedImages;
   List<Uint8List> _imageBytes = [];
   bool _isPhotoSelected = false;
+  bool _is_adding_feed = false;
 
   Future<void> _selectImages() async {
     final List<XFile> pickedImages = await _picker.pickMultiImage();
@@ -61,7 +62,10 @@ class _AddFeedDialogState extends State<AddFeedDialog> {
     return images;
   }
 
-  void postFeed() async {
+  Future<void> postFeed() async {
+    setState(() {
+      _is_adding_feed = true;
+    });
     List<String> imageUrls = await FirestoreService().uploadFeedImages(
         selectedImages: _selectedImages!, title: titleController.text);
     Map<String, String> images = image(imageUrls);
@@ -75,7 +79,8 @@ class _AddFeedDialogState extends State<AddFeedDialog> {
           .add({
         'title': titleController.text.trim(),
         'writeUp': writeUpController.text.trim(),
-        'images': images
+        'images': images,
+        'time': Timestamp.now(),
       });
       debugPrint("Images uploaded successfully!");
     }
@@ -84,104 +89,36 @@ class _AddFeedDialogState extends State<AddFeedDialog> {
   @override
   Widget build(BuildContext context) {
     return CustomActionDialog(
-      title: const Text(
-        "Add Feed",
+      title: Text(
+        _is_adding_feed ? "Adding feed..." : "Add Feed",
         style: TextStyle(fontWeight: FontWeight.bold),
       ),
-      content: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 10),
-          const Text('Title'),
-          const SizedBox(height: 10),
-          GlowingBorderTextField(
-            controller: titleController,
-          ),
-          const SizedBox(height: 10),
-          const Text('Write Up'),
-          const SizedBox(height: 10),
-          GlowingBorderTextField(
-            controller: writeUpController,
-            maxLines: 3,
-          ),
-          const SizedBox(height: 10),
-          Text(_isPhotoSelected ? 'Upload photos' : 'Photo Preview'),
-          const SizedBox(height: 10),
-          !_isPhotoSelected
-              ? Center(
-                  child: TouchResponsiveContainer(
-                    height: 100,
-                    width: 600,
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(5),
-                        color: const Color.fromARGB(149, 42, 45, 62),
-                        border: Border.all(
-                            color: const Color.fromARGB(81, 52, 73, 94))),
-                    onPressed: _selectImages,
-                    child: const Icon(
-                      Icons.add_photo_alternate_outlined,
-                      color: Color.fromRGBO(52, 73, 94, 1),
-                    ),
-                  ),
-                )
-              : SizedBox(
-                  width: 600,
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        for (int i = 0; i < _selectedImages!.length; i++) ...[
-                          Stack(
-                            children: [
-                              Container(
-                                  decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(5),
-                                      boxShadow: const [
-                                        BoxShadow(
-                                            color: Color.fromARGB(17, 0, 0, 0),
-                                            blurRadius: 3,
-                                            offset: Offset(2, 2))
-                                      ]),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(5),
-                                    child: Image.memory(
-                                      _imageBytes[i],
-                                      fit: BoxFit.cover,
-                                      height: 150,
-                                      width: 130,
-                                    ),
-                                  )),
-                              Positioned(
-                                top: 5,
-                                right: 5,
-                                child: MouseRegion(
-                                  onEnter: (_) {
-                                    setState(() {});
-                                  },
-                                  child: GestureDetector(
-                                    onTap: () => _removeImage(i),
-                                    child: Container(
-                                      decoration: const BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: Colors.black54,
-                                      ),
-                                      padding: const EdgeInsets.all(2),
-                                      child: const Icon(
-                                        Icons.close,
-                                        color: Colors.white,
-                                        size: 15,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              )
-                            ],
-                          ),
-                          const SizedBox(width: 10),
-                        ],
-                        TouchResponsiveContainer(
-                          height: 150,
-                          width: 130,
+      content: _is_adding_feed
+          ? CircularProgressIndicator()
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 10),
+                const Text('Title'),
+                const SizedBox(height: 10),
+                GlowingBorderTextField(
+                  controller: titleController,
+                ),
+                const SizedBox(height: 10),
+                const Text('Write Up'),
+                const SizedBox(height: 10),
+                GlowingBorderTextField(
+                  controller: writeUpController,
+                  maxLines: 3,
+                ),
+                const SizedBox(height: 10),
+                Text(_isPhotoSelected ? 'Upload photos' : 'Photo Preview'),
+                const SizedBox(height: 10),
+                !_isPhotoSelected
+                    ? Center(
+                        child: TouchResponsiveContainer(
+                          height: 100,
+                          width: 600,
                           decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(5),
                               color: const Color.fromARGB(149, 42, 45, 62),
@@ -192,27 +129,116 @@ class _AddFeedDialogState extends State<AddFeedDialog> {
                             Icons.add_photo_alternate_outlined,
                             color: Color.fromRGBO(52, 73, 94, 1),
                           ),
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-          const SizedBox(height: 20),
-        ],
-      ),
-      actions: [
-        const Spacer(),
-        const Spacer(),
-        MyCustomButtom(
-          conerRadius: 8.0,
-          backgroundColor: Colors.blue,
-          onPressed: () async {
-            postFeed();
-            Navigator.of(context).pop();
-          },
-          child: const Text("Add"),
-        ),
-      ],
+                        ),
+                      )
+                    : SizedBox(
+                        width: 600,
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              for (int i = 0;
+                                  i < _selectedImages!.length;
+                                  i++) ...[
+                                Stack(
+                                  children: [
+                                    Container(
+                                        decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(5),
+                                            boxShadow: const [
+                                              BoxShadow(
+                                                  color: Color.fromARGB(
+                                                      17, 0, 0, 0),
+                                                  blurRadius: 3,
+                                                  offset: Offset(2, 2))
+                                            ]),
+                                        child: ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(5),
+                                          child: Image.memory(
+                                            _imageBytes[i],
+                                            fit: BoxFit.cover,
+                                            height: 150,
+                                            width: 130,
+                                          ),
+                                        )),
+                                    Positioned(
+                                      top: 5,
+                                      right: 5,
+                                      child: MouseRegion(
+                                        onEnter: (_) {
+                                          setState(() {});
+                                        },
+                                        child: GestureDetector(
+                                          onTap: () => _removeImage(i),
+                                          child: Container(
+                                            decoration: const BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: Colors.black54,
+                                            ),
+                                            padding: const EdgeInsets.all(2),
+                                            child: const Icon(
+                                              Icons.close,
+                                              color: Colors.white,
+                                              size: 15,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                  ],
+                                ),
+                                const SizedBox(width: 10),
+                              ],
+                              TouchResponsiveContainer(
+                                height: 150,
+                                width: 130,
+                                decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(5),
+                                    color:
+                                        const Color.fromARGB(149, 42, 45, 62),
+                                    border: Border.all(
+                                        color: const Color.fromARGB(
+                                            81, 52, 73, 94))),
+                                onPressed: _selectImages,
+                                child: const Icon(
+                                  Icons.add_photo_alternate_outlined,
+                                  color: Color.fromRGBO(52, 73, 94, 1),
+                                ),
+                              )
+                            ],
+                          ),
+                        ),
+                      ),
+                const SizedBox(height: 20),
+              ],
+            ),
+      actions: _is_adding_feed
+          ? []
+          : [
+              const Spacer(),
+              const Spacer(),
+              MyCustomButtom(
+                conerRadius: 8.0,
+                backgroundColor: Colors.blue,
+                onPressed: () async {
+                  if (titleController.text.isEmpty ||
+                      titleController.text == "") {
+                    titleController.text = "Title can not be empty";
+                    return;
+                  }
+
+                  if (writeUpController.text.isEmpty) {
+                    writeUpController.text = "";
+                  }
+
+                  await postFeed();
+                  Navigator.of(context).pop();
+                },
+                child: const Text("Add"),
+              ),
+            ],
     );
   }
 

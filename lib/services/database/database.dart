@@ -42,7 +42,11 @@ class FirestoreService {
   }
 
   Stream<QuerySnapshot> getFeeds() {
-    return appData.doc('feeds').collection('feeds').snapshots();
+    return appData
+        .doc('feeds')
+        .collection('feeds')
+        .orderBy('time', descending: true)
+        .snapshots();
   }
 
   Future<List<String>> uploadFeedImages(
