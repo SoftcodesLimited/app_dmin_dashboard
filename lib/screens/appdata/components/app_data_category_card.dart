@@ -28,7 +28,6 @@ class AppdataCategoryCard extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(
-            // mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
                 padding: const EdgeInsets.all(10),
@@ -54,9 +53,7 @@ class AppdataCategoryCard extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(fontSize: 15),
               ),
-
               const SizedBox(width: 10),
-              //const Icon(Icons.more_vert, color: Colors.white54)
             ],
           ),
           Row(
@@ -131,10 +128,10 @@ class AppdataCategoryCardLoading extends StatelessWidget {
 
 class ProgressLine extends StatelessWidget {
   const ProgressLine({
-    Key? key,
+    super.key,
     this.color = primaryColor,
     required this.percentage,
-  }) : super(key: key);
+  });
 
   final Color? color;
   final int? percentage;

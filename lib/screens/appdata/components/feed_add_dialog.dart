@@ -7,6 +7,7 @@ import 'package:myapp/services/database/database.dart';
 import 'package:myapp/utils/custom_button.dart';
 import 'package:myapp/utils/customdialog.dart';
 import 'package:flutter/material.dart';
+import 'package:myapp/utils/debuglogs.dart';
 import 'package:myapp/utils/touch_responsive_container.dart';
 
 class AddFeedDialog extends StatefulWidget {
@@ -23,7 +24,7 @@ class _AddFeedDialogState extends State<AddFeedDialog> {
   List<XFile>? _selectedImages;
   List<Uint8List> _imageBytes = [];
   bool _isPhotoSelected = false;
-  bool _is_adding_feed = false;
+  bool _isAddingFeed = false;
 
   Future<void> _selectImages() async {
     final List<XFile> pickedImages = await _picker.pickMultiImage();
@@ -64,7 +65,7 @@ class _AddFeedDialogState extends State<AddFeedDialog> {
 
   Future<void> postFeed() async {
     setState(() {
-      _is_adding_feed = true;
+      _isAddingFeed = true;
     });
     List<String> imageUrls = await FirestoreService().uploadFeedImages(
         selectedImages: _selectedImages!, title: titleController.text);
@@ -82,7 +83,8 @@ class _AddFeedDialogState extends State<AddFeedDialog> {
         'images': images,
         'time': Timestamp.now(),
       });
-      debugPrint("Images uploaded successfully!");
+      
+        debugLog(DebugLevel.info, 'images $images have been deleted sucessfully');
     }
   }
 
@@ -90,10 +92,10 @@ class _AddFeedDialogState extends State<AddFeedDialog> {
   Widget build(BuildContext context) {
     return CustomActionDialog(
       title: Text(
-        _is_adding_feed ? "Adding feed..." : "Add Feed",
+        _isAddingFeed ? "Adding feed..." : "Add Feed",
         style: TextStyle(fontWeight: FontWeight.bold),
       ),
-      content: _is_adding_feed
+      content: _isAddingFeed
           ? CircularProgressIndicator()
           : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -214,7 +216,7 @@ class _AddFeedDialogState extends State<AddFeedDialog> {
                 const SizedBox(height: 20),
               ],
             ),
-      actions: _is_adding_feed
+      actions: _isAddingFeed
           ? []
           : [
               const Spacer(),

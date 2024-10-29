@@ -5,9 +5,8 @@ import 'package:myapp/mixins/firebase_update_function_helpers.dart';
 import 'package:myapp/screens/appdata/components/firestore_element.dart';
 import 'package:myapp/screens/appdata/components/loading_tree.dart';
 import 'package:myapp/utils/constants.dart';
+import 'package:myapp/utils/debuglogs.dart';
 import 'package:myapp/utils/tree_widget/tree_view.dart';
-
-
 
 class DocumentTreeWidget extends StatefulWidget {
   const DocumentTreeWidget({
@@ -169,7 +168,10 @@ class _DocumentTreeWidgetState extends State<DocumentTreeWidget>
                     setState(() {
                       final firestorePath = _generateFirestorePath(node);
                       widget.firestorePath.value = firestorePath;
-                      debugPrint('Firestore Path: $firestorePath');
+                      debugLog(
+                        DebugLevel.info,
+                        'Firestore Path: $firestorePath',
+                      );
                     });
                   },
                   child: _buildTreeNodeItem(node),
@@ -242,11 +244,11 @@ class _DocumentTreeWidgetState extends State<DocumentTreeWidget>
       color: secondaryColor,
       shadowColor: const Color.fromARGB(91, 0, 0, 0),
       onSelected: (String result) {
-        debugPrint('Selected option: $result');
+        debugLog(DebugLevel.info, 'Selected option: $result');
         // Add your action logic here
       },
       itemBuilder: (BuildContext context) => [
-       const  PopupMenuItem<String>(
+        const PopupMenuItem<String>(
           value: 'Edit',
           child: const Row(
             children: [
