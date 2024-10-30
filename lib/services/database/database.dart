@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:myapp/models/messaging/message_model.dart';
+import 'package:myapp/utils/debuglogs.dart';
 
 class FirestoreService {
   final CollectionReference appData =
@@ -76,5 +77,21 @@ class FirestoreService {
     }
 
     return imageUrls;
+  }
+
+  Future<void> deleteImageFromStorage(List<String> images) async {
+    try {
+      for (String image in images) {
+        // Extract the file path from the download URL
+        final ref = FirebaseStorage.instance.refFromURL(image);
+
+        // Delete the file
+        await ref.delete();
+        debugLog(DebugLevel.info, 'image $image has been deleted sucessfully');
+      }
+    } catch (e) {
+      debugLog(DebugLevel.error,
+          'Failed to delet image due to error: ${e.toString()}');
+    }
   }
 }

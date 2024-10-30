@@ -118,6 +118,7 @@ extension UiBuild<T> on TreeNode<T> {
                 }
 
                 return FeedWidget(
+                  hostContext: context,
                   document: document,
                   imageList: imageList,
                 );
