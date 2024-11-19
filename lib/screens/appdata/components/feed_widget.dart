@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:myapp/models/editscreeninfomodal.dart';
 import 'package:myapp/screens/appdata/components/deletefeed.dart';
 import 'package:myapp/utils/customdialog.dart';
 import 'package:myapp/utils/touch_responsive_container.dart';
@@ -10,11 +11,13 @@ class FeedWidget extends StatefulWidget {
   final QueryDocumentSnapshot<Object?> document;
   final BuildContext hostContext;
   final List<String> imageList;
+  final Function(EditScreenInfo?)? setEditDocScreen;
   const FeedWidget(
       {super.key,
       required this.document,
       required this.imageList,
-      required this.hostContext});
+      required this.hostContext,
+      this.setEditDocScreen});
 
   @override
   State<FeedWidget> createState() => _FeedWidgetState();
@@ -58,7 +61,12 @@ class _FeedWidgetState extends State<FeedWidget> {
                       size: 16,
                       color: Colors.blue,
                     ),
-                    onPressed: () {},
+                    onPressed: () {
+                      if (widget.setEditDocScreen != null) {
+                        widget.setEditDocScreen!(EditScreenInfo(
+                            doc: widget.document, category: 'feed'));
+                      }
+                    },
                   ),
                   const SizedBox(width: 10),
                   TouchResponsiveContainer(
@@ -101,10 +109,17 @@ class _FeedWidgetState extends State<FeedWidget> {
                       borderRadius: BorderRadius.circular(10),
                       child: CachedNetworkImage(
                         imageUrl: widget.imageList[imageIndex],
-                        placeholder: (context, url) => SizedBox(
-                            height: 60,
-                            width: 60,
-                            child: const CircularProgressIndicator()),
+                        placeholder: (context, url) => Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Center(
+                              child: SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: const CircularProgressIndicator()),
+                            ),
+                          ],
+                        ),
                         errorWidget: (context, url, error) =>
                             const Icon(Icons.error),
                         fit: BoxFit.cover,

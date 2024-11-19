@@ -1,5 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:myapp/models/editscreeninfomodal.dart';
 import 'package:myapp/screens/appdata/components/feed_widget.dart';
 import 'package:myapp/screens/appdata/components/firestore_element.dart';
 import 'package:myapp/screens/appdata/components/treenode_update_extension.dart';
@@ -9,8 +11,11 @@ import 'package:myapp/utils/custom_button.dart';
 import 'package:myapp/utils/tree_widget/tree_view.dart';
 
 extension UiBuild<T> on TreeNode<T> {
-  Widget buildWidget(BuildContext context, String? path,
-      ValueNotifier<List<TreeNode<T>>> treeNotifier) {
+  Widget buildWidget(
+      BuildContext context,
+      String? path,
+      ValueNotifier<List<TreeNode<T>>> treeNotifier,
+      Function(EditScreenInfo?)? setEditDocScreen) {
     final firestoreElement = data as FirestoreElement;
 
     if (data is! FirestoreElement) {
@@ -25,7 +30,8 @@ extension UiBuild<T> on TreeNode<T> {
         return buildUiForParentFields(
             context, path, treeNotifier, firestoreElement);
       case ElementType.document:
-        return buildDocumentUi(context, path, treeNotifier, firestoreElement);
+        return buildDocumentUi(
+            context, path, treeNotifier, firestoreElement, setEditDocScreen);
       default:
         return GestureDetector(
           onTap: () {
@@ -59,7 +65,8 @@ extension UiBuild<T> on TreeNode<T> {
       BuildContext context,
       String? path,
       ValueNotifier<List<TreeNode<T>>> treeNotifier,
-      FirestoreElement firestoreElement) {
+      FirestoreElement firestoreElement,
+     Function(EditScreenInfo?)? setEditDocScreen) {
     List<String> pathParts = path!.split('.');
     String parent = pathParts[0];
 
@@ -67,7 +74,7 @@ extension UiBuild<T> on TreeNode<T> {
       case "products":
         return buildProducts(context, firestoreElement);
       case "feeds":
-        return buildFeeds(context);
+        return buildFeeds(context, setEditDocScreen);
     }
 
     return Container();
@@ -89,7 +96,8 @@ extension UiBuild<T> on TreeNode<T> {
     return Container();
   }
 
-  Widget buildFeeds(BuildContext context) {
+  Widget buildFeeds(
+      BuildContext context, Function(EditScreenInfo?)? setEditDocScreen) {
     return StreamBuilder(
       stream: FirestoreService().getFeeds(),
       builder: (context, snapshot) {
@@ -121,6 +129,7 @@ extension UiBuild<T> on TreeNode<T> {
                   hostContext: context,
                   document: document,
                   imageList: imageList,
+                  setEditDocScreen: setEditDocScreen,
                 );
               },
             ),

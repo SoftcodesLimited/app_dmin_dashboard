@@ -33,14 +33,14 @@ class AppDataScreen extends StatelessWidget {
                 OverlayHeaderOption(
                   icon: 'assets/icons/add-circle.svg',
                   title: 'Add',
-                  onOptionSelected: (String selectedoption) {
-                    debugPrint(selectedoption);
-                    switch (selectedoption) {
-                      case 'Feed':
-                        showAnimatedDialog(
-                            context: context,
-                            barrierDismissible: false,
-                            dialogContent: const AddFeedDialog());
+                  onOptionSelected: (String selectedOption) {
+                    debugPrint(selectedOption);
+                    if (selectedOption == 'Feed') {
+                      showAnimatedDialog(
+                        context: context,
+                        barrierDismissible: false,
+                        dialogContent: const AddFeedDialog(),
+                      );
                     }
                   },
                   options: const <String>[
@@ -56,62 +56,65 @@ class AppDataScreen extends StatelessWidget {
             const SizedBox(height: defaultPadding),
             Row(
               children: [
+                // Main Content (Tree and Selected Node UI)
                 Expanded(
-                  flex: 4,
+                  flex: 1, // Adjust to 3/4 of the screen for large screens
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(
-                        flex: 3,
+                        flex:
+                            2, // Adjust TreeView to take 2/3 of the main content
                         child: DocumentTreeWidget(
                           selectedNodeNotifier: _selectedNodeNotifier,
                           firestorePath: firestorePath,
                         ),
                       ),
-                      Expanded(
-                        flex: 6,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            ValueListenableBuilder<TreeNode<FirestoreElement>?>(
-                              valueListenable: _selectedNodeNotifier,
-                              builder: (context, selectedNode, child) {
-                                return ValueListenableBuilder<String?>(
-                                  valueListenable: firestorePath,
-                                  builder: (context, path, child) {
-                                    return SelectedNodeUiWidget(
-                                      selectedNode: selectedNode,
-                                      path: path,
-                                      treeNotifier:
-                                          _treeNotifier, // Pass treeNotifier
-                                    );
-                                  },
-                                );
-                              },
-                            ),
-                            const SizedBox(height: defaultPadding),
-                          ],
-                        ),
-                      ),
                     ],
                   ),
                 ),
+                const SizedBox(width: defaultPadding),
+                Expanded(
+                  flex: 4, // Adjust Node UI to take 1/3 of the main content
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ValueListenableBuilder<TreeNode<FirestoreElement>?>(
+                        valueListenable: _selectedNodeNotifier,
+                        builder: (context, selectedNode, child) {
+                          return ValueListenableBuilder<String?>(
+                            valueListenable: firestorePath,
+                            builder: (context, path, child) {
+                              return SelectedNodeUiWidget(
+                                selectedNode: selectedNode,
+                                path: path,
+                                treeNotifier: _treeNotifier,
+                              );
+                            },
+                          );
+                        },
+                      ),
+                      const SizedBox(height: defaultPadding),
+                    ],
+                  ),
+                ),
+                /* Divider and Secondary Content
                 if (!Responsive.isMobile(context)) ...[
                   const SizedBox(width: defaultPadding),
-                  const Divider(),
-                ],
-                if (!Responsive.isMobile(context))
                   Expanded(
-                    flex: 2,
+                    //flex: 1, // Adjust to 1/4 of the screen for large screens
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(flex: 5, child: Container()),
-                        Expanded(flex: 4, child: Container()),
+                        Expanded(
+                         // flex: 1, // Placeholder for additional widgets
+                          child: Container(color: Colors.transparent),
+                        ),
                       ],
                     ),
-                  ),
+                  ), 
+                ],*/
               ],
             ),
           ],
