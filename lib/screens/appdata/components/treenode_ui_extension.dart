@@ -34,9 +34,6 @@ extension UiBuild<T> on TreeNode<T> {
             context, path, treeNotifier, firestoreElement, setEditDocScreen);
       default:
         return GestureDetector(
-          onTap: () {
-            // Define what happens on tap, like navigating to its children
-          },
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -66,7 +63,7 @@ extension UiBuild<T> on TreeNode<T> {
       String? path,
       ValueNotifier<List<TreeNode<T>>> treeNotifier,
       FirestoreElement firestoreElement,
-     Function(EditScreenInfo?)? setEditDocScreen) {
+      Function(EditScreenInfo?)? setEditDocScreen) {
     List<String> pathParts = path!.split('.');
     String parent = pathParts[0];
 

@@ -53,6 +53,7 @@ class _SelectedNodeUiWidgetState extends State<SelectedNodeUiWidget> {
               child: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     Text(
                       formatPath(widget.path ?? ''),
