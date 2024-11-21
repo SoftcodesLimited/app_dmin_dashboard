@@ -1,10 +1,9 @@
 import 'dart:html' as html;
-import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:myapp/screens/appdata/components/feed_add_dialog.dart';
+import 'package:myapp/services/database/database.dart';
 import 'package:myapp/utils/custom_button.dart';
 import 'package:myapp/utils/debuglogs.dart';
 import 'package:myapp/utils/touch_responsive_container.dart';
@@ -66,72 +65,9 @@ class _FeedEditWidgetState extends State<FeedEditWidget> {
       isSaving = true;
     });
     try {
-      final FirebaseStorage storage = FirebaseStorage.instance;
-      final CollectionReference collection = FirebaseFirestore.instance
-          .collection("AppData")
-          .doc('feeds')
-          .collection('feeds');
-
-      // Get the original images from the document
-      final Map<String, dynamic> originalImages = widget.doc['images'] ?? {};
-
-      // Identify removed images (present in original but not in `imageList`)
-      final List<String> removedImageUrls = originalImages.values
-          .where((url) => !imageList.contains(url))
-          .cast<String>()
-          .toList();
-
-      // Identify new images (Blob URLs in `imageList` that are not in the original)
-      final List<String> newImages =
-          imageList.where((url) => url.startsWith('blob:')).toList();
-
-      // Prepare the updated image URLs list
-      final List<String> updatedImageUrls = [];
-
-      // Handle uploading new images
-      for (final image in newImages) {
-        final Uint8List bytes = await html.HttpRequest.request(image,
-                responseType: 'arraybuffer')
-            .then((value) => Uint8List.fromList(value.response as List<int>))
-            .catchError((error) {
-          throw Exception("Failed to fetch image bytes: $error");
-        });
-
-        final String fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
-        final Reference storageRef = storage.ref('images/$fileName');
-        await storageRef.putData(bytes);
-        final String downloadUrl = await storageRef.getDownloadURL();
-        updatedImageUrls.add(downloadUrl);
-      }
-
-      // Retain existing images still present in `imageList`
-      for (final url in imageList) {
-        if (!url.startsWith('blob:')) {
-          updatedImageUrls.add(url);
-        }
-      }
-
-      // Delete removed images from Firebase Storage
-      for (final url in removedImageUrls) {
-        try {
-          final Reference storageRef = storage.refFromURL(url);
-          await storageRef.delete();
-        } catch (error) {
-          debugLog(
-              DebugLevel.error, "Failed to delete image: $url, error: $error");
-        }
-      }
-
-      // Update Firestore document
-      await collection.doc(widget.doc.id).update({
-        'title': titleController.text,
-        'writeUp': descController.text,
-        'images': {
-          for (int i = 0; i < updatedImageUrls.length; i++)
-            'image_$i': updatedImageUrls[i]
-        },
-      });
-
+      FirestoreService db = FirestoreService();
+      await db.updateFeed(
+          widget.doc, titleController.text, descController.text, imageList);
       debugLog(DebugLevel.debug, 'Changes saved successfully!');
     } catch (e) {
       debugLog(DebugLevel.error, 'Failed to save changes: $e');
@@ -155,7 +91,6 @@ class _FeedEditWidgetState extends State<FeedEditWidget> {
     super.didUpdateWidget(oldWidget);
 
     if (widget.doc.id != oldWidget.doc.id) {
-      // Update the UI when the doc changes
       setState(() {
         titleController.text = widget.doc['title'];
         descController.text = widget.doc['writeUp'];
@@ -193,10 +128,9 @@ class _FeedEditWidgetState extends State<FeedEditWidget> {
             const SizedBox(height: 10),
             Text("Description", style: TextStyle(color: Colors.grey)),
             GlowingBorderTextField(
-              maxLines: 3,
-              placeholder: "Description",
-              controller: descController,
-            ),
+                maxLines: 3,
+                placeholder: "Description",
+                controller: descController),
             const SizedBox(height: 10),
             Text("Photos", style: TextStyle(color: Colors.grey)),
             SizedBox(
@@ -255,15 +189,11 @@ class _FeedEditWidgetState extends State<FeedEditWidget> {
                               },
                               child: Container(
                                 decoration: const BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Colors.black54,
-                                ),
+                                    shape: BoxShape.circle,
+                                    color: Colors.black54),
                                 padding: const EdgeInsets.all(2),
-                                child: const Icon(
-                                  Icons.close,
-                                  color: Colors.white,
-                                  size: 15,
-                                ),
+                                child: const Icon(Icons.close,
+                                    color: Colors.white, size: 15),
                               ),
                             ),
                           ),

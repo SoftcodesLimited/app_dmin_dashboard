@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'dart:html' as html;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -92,6 +93,79 @@ class FirestoreService {
     } catch (e) {
       debugLog(DebugLevel.error,
           'Failed to delet image due to error: ${e.toString()}');
+    }
+  }
+
+  Future<void> updateFeed(QueryDocumentSnapshot<Object?> doc, String title,
+      String writeUp, List<String> imageList) async {
+    try {
+      final FirebaseStorage storage = FirebaseStorage.instance;
+      final CollectionReference collection =
+          appData.doc('feeds').collection('feeds');
+
+      // Get the original images from the document
+      final Map<String, dynamic> originalImages = doc['images'] ?? {};
+
+      // Identify removed images (present in original but not in `imageList`)
+      final List<String> removedImageUrls = originalImages.values
+          .where((url) => !imageList.contains(url))
+          .cast<String>()
+          .toList();
+
+      // Identify new images (Blob URLs in `imageList` that are not in the original)
+      final List<String> newImages =
+          imageList.where((url) => url.startsWith('blob:')).toList();
+
+      // Prepare the updated image URLs list
+      final List<String> updatedImageUrls = [];
+
+      // Handle uploading new images
+      for (final image in newImages) {
+        final Uint8List bytes = await html.HttpRequest.request(image,
+                responseType: 'arraybuffer')
+            .then((value) => Uint8List.fromList(value.response as List<int>))
+            .catchError((error) {
+          throw Exception("Failed to fetch image bytes: $error");
+        });
+
+        final String fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
+        final Reference storageRef = storage.ref('images/$fileName');
+        await storageRef.putData(bytes);
+        final String downloadUrl = await storageRef.getDownloadURL();
+        updatedImageUrls.add(downloadUrl);
+      }
+
+      // Retain existing images still present in `imageList`
+      for (final url in imageList) {
+        if (!url.startsWith('blob:')) {
+          updatedImageUrls.add(url);
+        }
+      }
+
+      // Delete removed images from Firebase Storage
+      for (final url in removedImageUrls) {
+        try {
+          final Reference storageRef = storage.refFromURL(url);
+          await storageRef.delete();
+        } catch (error) {
+          debugLog(
+              DebugLevel.error, "Failed to delete image: $url, error: $error");
+        }
+      }
+
+      // Update Firestore document
+      await collection.doc(doc.id).update({
+        'title': title,
+        'writeUp': writeUp,
+        'images': {
+          for (int i = 0; i < updatedImageUrls.length; i++)
+            'image_$i': updatedImageUrls[i]
+        },
+      });
+
+      debugLog(DebugLevel.debug, 'Changes saved successfully!');
+    } catch (e) {
+      rethrow;
     }
   }
 }
