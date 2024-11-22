@@ -4,7 +4,7 @@ import 'package:myapp/utils/constants.dart';
 import 'package:myapp/utils/simple_ptions_overlay_widget.dart';
 
 class OverlayHeaderOption extends StatefulWidget {
-  final String title;
+  final String title; 
   final String icon;
 
   final List<String> options;

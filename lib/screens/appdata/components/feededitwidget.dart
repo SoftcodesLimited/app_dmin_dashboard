@@ -68,7 +68,6 @@ class _FeedEditWidgetState extends State<FeedEditWidget> {
       FirestoreService db = FirestoreService();
       await db.updateFeed(
           widget.doc, titleController.text, descController.text, imageList);
-      debugLog(DebugLevel.debug, 'Changes saved successfully!');
     } catch (e) {
       debugLog(DebugLevel.error, 'Failed to save changes: $e');
     } finally {

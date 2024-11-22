@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:myapp/controllers/menu_app_controller.dart';
+import 'package:myapp/utils/header_searchfield.dart';
 import 'package:myapp/utils/responsive.dart';
 import 'package:provider/provider.dart';
 
@@ -50,12 +51,10 @@ class Header extends StatelessWidget {
             width: 100,
           ),
           const Expanded(child: SearchField()),
-
           if (!Responsive.isMobile(context))
             Spacer(
               flex: Responsive.isDesktop(context) ? 1 : 1,
             ),
-          //Expanded(child: SearchField()),
           if (!Responsive.isMobile(context))
             if (options != null)
               Row(
@@ -216,20 +215,6 @@ class ProfileCardState extends State<ProfileCard> {
             ),
             onPressed: () {})
       ],
-    );
-  }
-}
-
-class SearchField extends StatelessWidget {
-  const SearchField({
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return CupertinoSearchTextField(
-      prefixIcon: Container(),
-      style: const TextStyle(color: Colors.white),
     );
   }
 }

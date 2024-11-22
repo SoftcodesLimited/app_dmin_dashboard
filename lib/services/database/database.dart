@@ -121,12 +121,17 @@ class FirestoreService {
 
       // Handle uploading new images
       for (final image in newImages) {
-        final Uint8List bytes = await html.HttpRequest.request(image,
+        /*final Uint8List bytes = await html.HttpRequest.request(image,
                 responseType: 'arraybuffer')
             .then((value) => Uint8List.fromList(value.response as List<int>))
             .catchError((error) {
           throw Exception("Failed to fetch image bytes: $error");
-        });
+        });*/
+        final Uint8List bytes = Uint8List.view((await html.HttpRequest.request(
+          image,
+          responseType: 'arraybuffer',
+        ))
+            .response as ByteBuffer);
 
         final String fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
         final Reference storageRef = storage.ref('images/$fileName');
@@ -143,15 +148,7 @@ class FirestoreService {
       }
 
       // Delete removed images from Firebase Storage
-      for (final url in removedImageUrls) {
-        try {
-          final Reference storageRef = storage.refFromURL(url);
-          await storageRef.delete();
-        } catch (error) {
-          debugLog(
-              DebugLevel.error, "Failed to delete image: $url, error: $error");
-        }
-      }
+      deleteImageFromStorage(removedImageUrls);
 
       // Update Firestore document
       await collection.doc(doc.id).update({
