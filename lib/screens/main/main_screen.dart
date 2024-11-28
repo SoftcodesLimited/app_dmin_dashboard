@@ -39,6 +39,20 @@ class MainScreen extends StatelessWidget {
                         onExit: (_) => this.isHovered.value = false,
                         child: DesktopSideMenu(
                           getIndex: (index) {
+                            if (activeIndex.value != index) {
+                              switch (activeIndex.value) {
+                                case 0:
+                                  DashboardScreen();
+                                case 1:
+                                  MessagesScreen();
+                                case 2:
+                                  AppDataScreen();
+                                case 3:
+                                  NotificationsScreen();
+                                default:
+                                  Container();
+                              }
+                            }
                             activeIndex.value = index;
                           },
                         ),
